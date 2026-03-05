@@ -1,0 +1,43 @@
+{
+  "name": "@railgun-reloaded/balance-scanner",
+  "version": "0.0.0",
+  "description": "A simple module responsible for discovering, tracking, and computing user RAILGUN balances from on-chain privacy pool state.",
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "pretest": "npm run build",
+    "test": "npm run build && brittle ./test/**/*.test.js",
+    "test:only": "npm run build && brittle --solo ./test/**/*.test.js",
+    "prepack": "npm run build",
+    "postinstall": "./postinstall.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://git@github.com/railgun-reloaded/balance-scanner.git"
+  },
+  "keywords": ["railgun", "privacy", "balance scanner"],
+  "author": "RAILGUN Project Contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/railgun-reloaded/balance-scanner/issues"
+  },
+  "homepage": "https://github.com/railgun-reloaded/balance-scanner#readme",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "devDependencies": {
+    "@types/brittle": "^3.5.0",
+    "eslint": "^9.24.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@railgun-reloaded/scanner": "https://github.com/railgun-reloaded/scanner#dev",
+    "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node",
+    "@reloaded/storage": "https://github.com/railgun-reloaded/storage#chore/kickoff",
+    "@railgun-reloaded/eslint-config": "^1.1.0",
+    "@railgun-reloaded/tsconfig": "^1.2.0",
+    "@types/node": "^24.0.11",
+    "brittle": "^3.19.1"
+  }
+}

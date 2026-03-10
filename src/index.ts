@@ -1,0 +1,8 @@
+export { processAction } from './handlers/processor.js'
+export type { ProcessorContext, ProcessActionResult } from './handlers/processor.js'
+export { processTransactAction } from './handlers/transact.js'
+export type { TransactContext, ProcessTransactResult } from './handlers/transact.js'
+export { processShieldAction } from './handlers/shield.js'
+export type { ShieldContext } from './handlers/shield.js'
+export { processNullifiers } from './handlers/nullifier.js'
+export type { SpentNoteInfo } from './handlers/nullifier.js'

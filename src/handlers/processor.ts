@@ -1,6 +1,7 @@
 import type { Shield, Transact, Unshield } from '@railgun-reloaded/scanner'
 import type { Chain, TokenDataGetter } from '@railgun-reloaded/wallet-node'
-import type { NewNote, NewSentNote } from '@reloaded/storage/wallet'
+import type { NewNote, NewSentNote, WalletDB } from '@reloaded/storage/wallet'
+import { insertNotesBatch, insertSentNotesBatch } from '@reloaded/storage/wallet'
 
 import { processShieldAction } from './shield.js'
 import { processTransactAction } from './transact.js'
@@ -22,6 +23,11 @@ type ProcessActionResult = {
   sentNotes: NewSentNote[]
 }
 
+type DecryptAndStoreResult = {
+  receivedCount: number
+  sentCount: number
+}
+
 /**
  * Process any action based on its type, attempting decryption and returning
  * any notes that were successfully decrypted as received or sent.
@@ -29,7 +35,7 @@ type ProcessActionResult = {
  * @param ctx - Wallet keys and block context
  * @returns Received notes and sent notes from successful decryptions
  */
-export async function processAction (
+async function processAction (
   action: Shield | Transact | Unshield,
   ctx: ProcessorContext
 ): Promise<ProcessActionResult> {
@@ -45,4 +51,30 @@ export async function processAction (
   return { receivedNotes: [], sentNotes: [] }
 }
 
-export type { ProcessorContext, ProcessActionResult }
+/**
+ * Decrypts all actions in a batch and stores successfully decrypted notes to the wallet database.
+ * Processes all actions concurrently, then performs a single batch insert for performance.
+ * Notes that cannot be decrypted (belonging to other wallets) are silently ignored.
+ * @param actions - Array of scanner actions to process
+ * @param ctx - Wallet keys and block context
+ * @param db - Wallet database to persist decrypted notes
+ * @returns Counts of received and sent notes inserted
+ */
+async function decryptAndStoreActions (
+  actions: (Shield | Transact | Unshield)[],
+  ctx: ProcessorContext,
+  db: WalletDB
+): Promise<DecryptAndStoreResult> {
+  const results = await Promise.all(actions.map((action) => processAction(action, ctx)))
+
+  const allReceived: NewNote[] = results.flatMap((r) => r.receivedNotes)
+  const allSent: NewSentNote[] = results.flatMap((r) => r.sentNotes)
+
+  const receivedCount = insertNotesBatch(db, allReceived)
+  const sentCount = insertSentNotesBatch(db, allSent)
+
+  return { receivedCount, sentCount }
+}
+
+export { processAction, decryptAndStoreActions }
+export type { ProcessorContext, ProcessActionResult, DecryptAndStoreResult }

@@ -2,9 +2,10 @@ import type { Shield, Transact } from '@railgun-reloaded/scanner'
 import { ActionType } from '@railgun-reloaded/scanner'
 import type { TokenDataGetter } from '@railgun-reloaded/wallet-node'
 import { TokenType, initializeCryptographyLibs } from '@railgun-reloaded/wallet-node'
+import { createWallet, createWalletDB, getUnspentNotes } from '@reloaded/storage/wallet'
 import { hook, test } from 'brittle'
 
-import { processAction } from '../src/handlers/processor.js'
+import { decryptAndStoreActions, processAction } from '../src/handlers/processor.js'
 import { processShieldAction } from '../src/handlers/shield.js'
 import { processTransactAction } from '../src/handlers/transact.js'
 
@@ -262,4 +263,110 @@ test('processShieldAction returns empty for non-decryptable generated commitment
   const notes = await processShieldAction(action, ctx)
   t.ok(Array.isArray(notes), 'returns an array')
   t.is(notes.length, 0, 'non-decryptable generated commitment returns empty')
+})
+
+/**
+ * Creates an in-memory WalletDB with the required schema tables for testing.
+ * @returns An in-memory WalletDB instance
+ */
+function createTestDB () {
+  const db = createWalletDB({ path: ':memory:', enableWAL: false, runMigrations: false })
+  db.$client.exec(`
+    CREATE TABLE IF NOT EXISTS wallets (
+      id TEXT PRIMARY KEY NOT NULL,
+      encrypted_keys BLOB NOT NULL,
+      name TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+    CREATE TABLE IF NOT EXISTS notes (
+      commitment TEXT PRIMARY KEY NOT NULL,
+      wallet_id TEXT NOT NULL,
+      nullifier TEXT NOT NULL UNIQUE,
+      token TEXT NOT NULL,
+      amount TEXT NOT NULL,
+      spent INTEGER NOT NULL DEFAULT 0,
+      spent_txid TEXT,
+      block_number TEXT NOT NULL,
+      tree_id INTEGER NOT NULL,
+      leaf_index TEXT NOT NULL,
+      commitment_type TEXT NOT NULL DEFAULT 'TransactCommitmentV2',
+      output_type INTEGER,
+      pois_per_list TEXT,
+      decrypted_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS sent_notes (
+      commitment TEXT PRIMARY KEY NOT NULL,
+      wallet_id TEXT NOT NULL,
+      txid TEXT NOT NULL,
+      token TEXT NOT NULL,
+      amount TEXT NOT NULL,
+      output_type INTEGER,
+      wallet_source TEXT,
+      recipient_address TEXT NOT NULL,
+      commitment_type TEXT NOT NULL DEFAULT 'TransactCommitmentV2',
+      block_number TEXT NOT NULL,
+      tree_id INTEGER NOT NULL,
+      leaf_index TEXT NOT NULL,
+      decrypted_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE CASCADE
+    );
+  `)
+  return db
+}
+
+const mockCtx = {
+  chain: { type: 0, id: 1 },
+  walletId: 'test-wallet',
+  txid: '0x0000',
+  viewingPrivateKey: new Uint8Array(32),
+  viewingPublicKey: new Uint8Array(32),
+  masterPublicKey: new Uint8Array(32),
+  nullifyingKey: new Uint8Array(32),
+  blockNumber: 100n,
+  tokenDataGetter: mockTokenDataGetter,
+}
+
+test('decryptAndStoreActions stores no notes for empty action list', async (t) => {
+  const db = createTestDB()
+  createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys'), name: 'test' })
+
+  const result = await decryptAndStoreActions([], mockCtx, db)
+
+  t.is(result.receivedCount, 0, 'zero received notes inserted')
+  t.is(result.sentCount, 0, 'zero sent notes inserted')
+})
+
+test('decryptAndStoreActions stores no notes when commitments are not decryptable', async (t) => {
+  const db = createTestDB()
+  createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys'), name: 'test' })
+
+  const action: Transact = {
+    actionType: ActionType.TransactCommitment,
+    txID: new Uint8Array(32),
+    nullifiers: [],
+    commitments: [
+      {
+        hash: new Uint8Array(32),
+        ciphertext: { iv: new Uint8Array(16), tag: new Uint8Array(16), data: [new Uint8Array(32)] },
+        blindedSenderViewingKey: new Uint8Array(32),
+        blindedReceiverViewingKey: new Uint8Array(32),
+        annotationData: new Uint8Array(32),
+        memo: [],
+        treeNumber: 0,
+        treePosition: 0,
+      },
+    ],
+    boundParamsHash: new Uint8Array(32),
+    utxoBatchStartPositionOut: 0,
+    utxoTreeIn: 0,
+    utxoTreeOut: 0,
+    hasUnshield: false,
+  }
+
+  const result = await decryptAndStoreActions([action], mockCtx, db)
+
+  t.is(result.receivedCount, 0, 'non-decryptable commitment stores no received notes')
+  t.is(result.sentCount, 0, 'non-decryptable commitment stores no sent notes')
+  t.is(getUnspentNotes(db, 'test-wallet').length, 0, 'wallet has no unspent notes')
 })

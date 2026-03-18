@@ -26,11 +26,9 @@ export function processNullifiers (
 ): SpentNoteInfo[] {
   const spentNotes: SpentNoteInfo[] = []
 
-  console.log(`[TRACE] processNullifiers: ${nullifiers.length} on-chain nullifiers to check`)
   for (const nullifier of nullifiers) {
     const hex = uint8ArrayToHex(nullifier)
     const note = getNoteByNullifier(db, hex)
-    console.log(`[TRACE]   on-chain nullifier=${hex} matched=${!!note}`)
 
     if (!note || note.spent) {
       continue

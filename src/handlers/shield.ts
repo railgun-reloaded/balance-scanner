@@ -44,7 +44,6 @@ export async function processShieldAction (
   const nullifier = Note.computeNullifier(ctx.nullifyingKey, leafIndex)
 
   const commitmentType = 'encryptedRandom' in commitment ? 'GeneratedCommitment' : 'ShieldCommitment'
-  console.log(`[DEBUG] SHIELD note: block=${ctx.blockNumber} value=${shieldNote.value} leaf=${leafIndex} token=${uint8ArrayToHex(shieldNote.tokenData.tokenAddress)}`)
   return [{
     commitment: uint8ArrayToHex(commitment.hash),
     walletId: ctx.walletId,
@@ -55,6 +54,7 @@ export async function processShieldAction (
     treeId: commitment.treeNumber,
     leafIndex,
     commitmentType,
+    outputType: null,
   }]
 }
 

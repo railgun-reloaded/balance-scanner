@@ -1,5 +1,5 @@
-export { processAction } from './handlers/processor.js'
-export type { ProcessorContext, ProcessActionResult } from './handlers/processor.js'
+export { processAction, decryptAndStoreActions } from './handlers/processor.js'
+export type { ProcessorContext, ProcessActionResult, DecryptAndStoreResult } from './handlers/processor.js'
 export { processTransactAction } from './handlers/transact.js'
 export type { TransactContext, ProcessTransactResult } from './handlers/transact.js'
 export { processShieldAction } from './handlers/shield.js'

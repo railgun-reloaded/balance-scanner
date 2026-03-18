@@ -178,7 +178,6 @@ async function tryDecryptTransactCommitment (
       commitment.hash, ctx, receiverData, leafIndex,
       'TransactCommitmentV2', annotationData, commitment.treeNumber
     )
-    console.log(`[DEBUG] TRANSACT RECV: block=${ctx.blockNumber} value=${receiverData.value} leaf=${leafIndex} token=${uint8ArrayToHex(receiverData.tokenData.tokenAddress)}`)
   }
 
   if (senderData) {
@@ -187,7 +186,6 @@ async function tryDecryptTransactCommitment (
       commitment.hash, ctx, senderData, leafIndex,
       'TransactCommitmentV2', recipientMPK, annotationData, commitment.treeNumber
     )
-    console.log(`[DEBUG] TRANSACT SENT: block=${ctx.blockNumber} value=${senderData.value} leaf=${leafIndex} token=${uint8ArrayToHex(senderData.tokenData.tokenAddress)}`)
   }
 
   return { receivedNote, sentNote }
@@ -233,7 +231,6 @@ async function tryDecryptLegacyEncryptedCommitment (
       commitment.hash, ctx, receiverData, leafIndex,
       'LegacyEncryptedCommitment', annotationData, commitment.treeNumber
     )
-    console.log(`[DEBUG] LEGACY RECV: block=${ctx.blockNumber} value=${receiverData.value} leaf=${leafIndex} token=${uint8ArrayToHex(receiverData.tokenData.tokenAddress)}`)
   }
 
   if (senderData) {
@@ -242,7 +239,6 @@ async function tryDecryptLegacyEncryptedCommitment (
       commitment.hash, ctx, senderData, leafIndex,
       'LegacyEncryptedCommitment', senderData.encodedMPK, annotationData, commitment.treeNumber
     )
-    console.log(`[DEBUG] LEGACY SENT: block=${ctx.blockNumber} value=${senderData.value} leaf=${leafIndex} token=${uint8ArrayToHex(senderData.tokenData.tokenAddress)}`)
   }
 
   return { receivedNote, sentNote }

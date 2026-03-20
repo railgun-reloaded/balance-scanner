@@ -1,0 +1,8 @@
+export { decryptActions, processAction } from './processor'
+export type { ProcessActionResult, ProcessorContext } from './processor'
+export { processTransactAction } from './transact'
+export type { ProcessTransactResult, TransactContext } from './transact'
+export { processShieldAction } from './shield'
+export type { ShieldContext } from './shield'
+export { processNullifiers } from './nullifier'
+export type { DecryptedNote, DecryptedSentNote, SpentNoteInfo } from './types'

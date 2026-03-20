@@ -10,8 +10,7 @@
     "pretest": "npm run build",
     "test": "npm run build && brittle ./test/**/*.test.js",
     "test:only": "npm run build && brittle --solo ./test/**/*.test.js",
-    "prepack": "npm run build",
-    "postinstall": "./postinstall.sh"
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -33,10 +32,9 @@
   },
   "dependencies": {
     "@railgun-reloaded/scanner": "https://github.com/railgun-reloaded/scanner#dev",
-    "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node",
-    "@reloaded/storage": "https://github.com/railgun-reloaded/storage#chore/kickoff",
+    "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node#main",
     "@railgun-reloaded/eslint-config": "^1.1.0",
-    "@railgun-reloaded/tsconfig": "^1.2.0",
+    "@railgun-reloaded/tsconfig": "https://github.com/railgun-reloaded/tsconfig#main",
     "@types/node": "^24.0.11",
     "brittle": "^3.19.1"
   }

@@ -3,13 +3,13 @@ import type { Chain, NoteAnnotationData, TokenDataGetter } from '@railgun-reload
 import {
   MEMO_SENDER_RANDOM_NULL,
   Memo,
-  Note,
   TXIDVersion,
   decryptCommitmentAsReceiverOrSender,
-  decryptLegacyCommitmentAsReceiverOrSender,
   uint8ArrayToHex,
+  hexToUint8Array,
 } from '@railgun-reloaded/wallet-node'
 
+import { computeNullifier } from './nullifier'
 import type { DecryptedNote, DecryptedSentNote } from './types'
 
 type TransactContext = {
@@ -76,19 +76,19 @@ function decodeRecipientMPK (
 function buildReceivedNote (
   hash: Uint8Array,
   ctx: TransactContext,
-  receiverData: { tokenData: { tokenAddress: Uint8Array }, value: bigint },
+  receiverData: { tokenData: { tokenAddress: string }, value: bigint },
   leafIndex: bigint,
   commitmentType: string,
   annotationData: NoteAnnotationData | null,
   treeNumber: number
 ): DecryptedNote {
-  const nullifier = Note.computeNullifier(ctx.nullifyingKey, leafIndex)
+  const nullifier = computeNullifier(ctx.nullifyingKey, leafIndex)
 
   return {
     commitment: uint8ArrayToHex(hash),
     walletId: ctx.walletId,
     nullifier: uint8ArrayToHex(nullifier),
-    token: uint8ArrayToHex(receiverData.tokenData.tokenAddress),
+    token: receiverData.tokenData.tokenAddress,
     amount: receiverData.value,
     blockNumber: ctx.blockNumber,
     treeId: treeNumber,
@@ -117,10 +117,10 @@ function buildReceivedNote (
 function buildSentNote (
   hash: Uint8Array,
   ctx: TransactContext,
-  senderData: { tokenData: { tokenAddress: Uint8Array }, value: bigint, encodedMPK: Uint8Array },
+  senderData: { tokenData: { tokenAddress: string }, value: bigint, encodedMPK: string },
   leafIndex: bigint,
   commitmentType: string,
-  recipientMPK: Uint8Array,
+  recipientMPKHex: string,
   annotationData: NoteAnnotationData | null,
   treeNumber: number
 ): DecryptedSentNote {
@@ -128,11 +128,11 @@ function buildSentNote (
     commitment: uint8ArrayToHex(hash),
     walletId: ctx.walletId,
     txid: ctx.txid,
-    token: uint8ArrayToHex(senderData.tokenData.tokenAddress),
+    token: senderData.tokenData.tokenAddress,
     amount: senderData.value,
     outputType: annotationData?.outputType ?? null,
     walletSource: annotationData?.walletSource ?? null,
-    recipientAddress: uint8ArrayToHex(recipientMPK),
+    recipientAddress: recipientMPKHex,
     commitmentType,
     blockNumber: ctx.blockNumber,
     treeId: treeNumber,
@@ -168,10 +168,11 @@ async function tryDecryptTransactCommitment (
     return { receivedNote: null, sentNote: null }
   }
 
-  const annotationData = Memo.decryptAnnotationData(
+  const annotationDataRaw = Memo.decryptAnnotationData(
     commitment.annotationData,
     ctx.viewingPrivateKey
   )
+  const annotationData = annotationDataRaw ?? null
 
   const leafIndex = BigInt(commitment.treePosition)
   let receivedNote: DecryptedNote | null = null
@@ -185,10 +186,12 @@ async function tryDecryptTransactCommitment (
   }
 
   if (senderData) {
-    const recipientMPK = decodeRecipientMPK(senderData.encodedMPK, ctx.masterPublicKey, annotationData)
+    const encodedMPKBytes = hexToUint8Array(senderData.encodedMPK)
+    const recipientMPKBytes = decodeRecipientMPK(encodedMPKBytes, ctx.masterPublicKey, annotationData)
+    const recipientMPKHex = uint8ArrayToHex(recipientMPKBytes)
     sentNote = buildSentNote(
       commitment.hash, ctx, senderData, leafIndex,
-      'TransactCommitmentV2', recipientMPK, annotationData, commitment.treeNumber
+      'TransactCommitmentV2', recipientMPKHex, annotationData, commitment.treeNumber
     )
   }
 
@@ -203,48 +206,13 @@ async function tryDecryptTransactCommitment (
  * @returns A DecryptResult with receivedNote and/or sentNote
  */
 async function tryDecryptLegacyEncryptedCommitment (
-  commitment: EncryptedCommitment,
-  ctx: TransactContext
+  _commitment: EncryptedCommitment,
+  _ctx: TransactContext
 ): Promise<DecryptResult> {
-  const { receiverData, senderData } = await decryptLegacyCommitmentAsReceiverOrSender(
-    ctx.chain,
-    commitment.ciphertext,
-    commitment.ephemeralKeys,
-    ctx.viewingPrivateKey,
-    ctx.tokenDataGetter
-  )
-
-  if (!receiverData && !senderData) {
-    return { receivedNote: null, sentNote: null }
-  }
-
-  let annotationData: NoteAnnotationData | null = null
-  if (commitment.memo.length >= 2 && commitment.memo[0] && commitment.memo[1]) {
-    const combined = new Uint8Array(commitment.memo[0].length + commitment.memo[1].length)
-    combined.set(commitment.memo[0], 0)
-    combined.set(commitment.memo[1], commitment.memo[0].length)
-    annotationData = Memo.decryptAnnotationData(combined, ctx.viewingPrivateKey)
-  }
-
-  const leafIndex = BigInt(commitment.treePosition)
-  let receivedNote: DecryptedNote | null = null
-  let sentNote: DecryptedSentNote | null = null
-
-  if (receiverData) {
-    receivedNote = buildReceivedNote(
-      commitment.hash, ctx, receiverData, leafIndex,
-      'LegacyEncryptedCommitment', annotationData, commitment.treeNumber
-    )
-  }
-
-  if (senderData) {
-    sentNote = buildSentNote(
-      commitment.hash, ctx, senderData, leafIndex,
-      'LegacyEncryptedCommitment', senderData.encodedMPK, annotationData, commitment.treeNumber
-    )
-  }
-
-  return { receivedNote, sentNote }
+  // TODO: Legacy V1 encrypted commitments are not yet supported in reloaded wallet-node.
+  // The decryption logic for ephemeralKeys-based ECDH needs to be implemented.
+  // For now, return empty results.
+  return { receivedNote: null, sentNote: null }
 }
 
 /**

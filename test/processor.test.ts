@@ -22,12 +22,8 @@ const mockTokenDataGetter: TokenDataGetter = {
    */
   async getTokenDataFromHash (_txidVersion, _chain, tokenHash) {
     const cleanHash = tokenHash.startsWith('0x') ? tokenHash.slice(2) : tokenHash
-    const addressHex = cleanHash.slice(24)
-    const bytes = new Uint8Array(addressHex.length / 2)
-    for (let i = 0; i < bytes.length; i++) {
-      bytes[i] = parseInt(addressHex.slice(i * 2, i * 2 + 2), 16)
-    }
-    return { tokenType: TokenType.ERC20, tokenAddress: bytes, tokenSubID: new Uint8Array(32) }
+    const addressHex = '0x' + cleanHash.slice(24)
+    return { tokenType: TokenType.ERC20, tokenAddress: addressHex, tokenSubID: '0x' + '00'.repeat(32) }
   },
 }
 

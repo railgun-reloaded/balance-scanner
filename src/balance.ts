@@ -3,7 +3,7 @@ import type { DecryptedNote } from './types'
 type TokenBalance = {
   token: string
   balance: bigint
-  utxoCount: number
+  utxos: DecryptedNote[]
 }
 
 function aggregateBalances(
@@ -20,22 +20,22 @@ function aggregateBalances(
     return []
   }
 
-  const balanceMap = new Map<string, { balance: bigint; count: number }>()
+  const balanceMap = new Map<string, { balance: bigint; utxos: DecryptedNote[] }>()
 
   for (const note of unspentNotes) {
     const existing = balanceMap.get(note.token)
     if (existing) {
       existing.balance += note.amount
-      existing.count += 1
+      existing.utxos.push(note)
     } else {
-      balanceMap.set(note.token, { balance: note.amount, count: 1 })
+      balanceMap.set(note.token, { balance: note.amount, utxos: [note] })
     }
   }
 
-  return Array.from(balanceMap.entries()).map(([token, { balance, count }]) => ({
+  return Array.from(balanceMap.entries()).map(([token, { balance, utxos }]) => ({
     token,
     balance,
-    utxoCount: count,
+    utxos,
   }))
 }
 

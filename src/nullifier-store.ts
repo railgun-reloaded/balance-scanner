@@ -1,0 +1,79 @@
+import type { Transact } from '@railgun-reloaded/scanner'
+import type { ChainDB } from '@railgun-reloaded/storage'
+import {
+  getAllNullifiers,
+  insertNullifiersBatch,
+} from '@railgun-reloaded/storage'
+import { uint8ArrayToHex } from '@railgun-reloaded/wallet-node'
+
+import type { NullifierCache } from './nullifier-cache'
+
+/**
+ * Extract nullifiers from Transact events and persist them to the chain database.
+ * Optionally updates a NullifierCache to keep it in sync.
+ * @param chainDb - Chain database instance.
+ * @param events - Transact events containing nullifiers.
+ * @param blockNumber - Block number these events occurred at.
+ * @param transactionHash - Transaction hash for the events.
+ * @param cache - Optional nullifier cache to update.
+ */
+function syncNullifiers (
+  chainDb: ChainDB,
+  events: Transact[],
+  blockNumber: bigint,
+  transactionHash: Uint8Array,
+  cache?: NullifierCache
+): void {
+  const batch = []
+
+  for (const event of events) {
+    for (const nullifier of event.nullifiers) {
+      batch.push({
+        nullifier,
+        transactionHash,
+        blockNumber,
+        treeNumber: event.utxoTreeIn,
+      })
+    }
+  }
+
+  if (batch.length === 0) return
+
+  insertNullifiersBatch(chainDb, batch)
+
+  if (cache) {
+    for (const entry of batch) {
+      cache.addDirect(uint8ArrayToHex(entry.nullifier), blockNumber)
+    }
+  }
+}
+
+/**
+ * Load all nullifiers into a Set of hex strings for balance calculations.
+ * Uses the cache for incremental loading when available.
+ * @param chainDb - Chain database instance.
+ * @param cache - Optional NullifierCache for incremental loading.
+ * @returns Set of 0x-prefixed hex nullifier strings.
+ */
+function loadNullifierSet (
+  chainDb: ChainDB,
+  cache?: NullifierCache
+): Set<string> {
+  if (cache) {
+    if (!cache.isInitialized) {
+      cache.initialize(chainDb)
+    } else {
+      cache.update(chainDb)
+    }
+    return cache.nullifiers
+  }
+
+  const rows = getAllNullifiers(chainDb)
+  const set = new Set<string>()
+  for (const row of rows) {
+    set.add(uint8ArrayToHex(row.nullifier as Uint8Array))
+  }
+  return set
+}
+
+export { syncNullifiers, loadNullifierSet }

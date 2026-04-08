@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@railgun-reloaded/scanner": "https://github.com/railgun-reloaded/scanner#dev",
+    "@railgun-reloaded/storage": "file:../storage",
     "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node#main",
     "@railgun-reloaded/eslint-config": "^1.1.0",
     "@railgun-reloaded/tsconfig": "https://github.com/railgun-reloaded/tsconfig#main",

@@ -11,3 +11,4 @@ protected-main.json
 
 # dev-container
 .devcontainer/
+.claude

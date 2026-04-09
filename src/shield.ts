@@ -1,10 +1,11 @@
 import type { Shield } from '@railgun-reloaded/scanner'
 import {
-  Note,
   ShieldNote,
   uint8ArrayToHex,
+  uint8ArrayToBigInt,
 } from '@railgun-reloaded/wallet-node'
 
+import { computeNullifier } from './nullifier'
 import type { DecryptedNote } from './types'
 
 type ShieldContext = {
@@ -26,13 +27,14 @@ export async function processShieldAction (
   ctx: ShieldContext
 ): Promise<DecryptedNote[]> {
   const commitment = action.commitment
+  const masterPublicKeyBigInt = uint8ArrayToBigInt(ctx.masterPublicKey)
 
   let shieldNote: ShieldNote | null
 
   if ('encryptedRandom' in commitment) {
-    shieldNote = ShieldNote.fromGeneratedCommitment(commitment, ctx.viewingPrivateKey, ctx.masterPublicKey)
+    shieldNote = ShieldNote.fromGeneratedCommitment(commitment, masterPublicKeyBigInt)
   } else {
-    shieldNote = await ShieldNote.fromShieldCommitment(commitment, ctx.viewingPrivateKey, ctx.masterPublicKey)
+    shieldNote = await ShieldNote.fromShieldCommitment(commitment, ctx.viewingPrivateKey, masterPublicKeyBigInt)
   }
 
   if (!shieldNote) {
@@ -40,14 +42,14 @@ export async function processShieldAction (
   }
 
   const leafIndex = BigInt(commitment.treePosition)
-  const nullifier = Note.computeNullifier(ctx.nullifyingKey, leafIndex)
+  const nullifier = computeNullifier(ctx.nullifyingKey, leafIndex)
   const commitmentType = 'encryptedRandom' in commitment ? 'GeneratedCommitment' : 'ShieldCommitment'
 
   return [{
     commitment: uint8ArrayToHex(commitment.hash),
     walletId: ctx.walletId,
     nullifier: uint8ArrayToHex(nullifier),
-    token: uint8ArrayToHex(shieldNote.tokenData.tokenAddress),
+    token: shieldNote.tokenData.tokenAddress,
     amount: shieldNote.value,
     blockNumber: ctx.blockNumber,
     treeId: commitment.treeNumber,

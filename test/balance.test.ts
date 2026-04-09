@@ -1,6 +1,6 @@
 import { test } from 'brittle'
 
-import { aggregateBalances } from '../src/balance'
+import { aggregateBalances, getBalances } from '../src/balance'
 import type { DecryptedNote } from '../src/types'
 
 const createNote = (overrides: Partial<DecryptedNote>): DecryptedNote => ({
@@ -150,4 +150,65 @@ test('zero-value notes with some spent', (t) => {
     t.is(result[0].balance, 0n, 'balance is zero')
     t.is(result[0].utxos.length, 1, 'one unspent zero-value note')
   }
+})
+
+// ============================================================================
+// getBalances() Tests
+// ============================================================================
+
+test('getBalances: returns Map of token addresses to balances', (t) => {
+  const usdcAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+  const daiAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+
+  const notes = [
+    createNote({ token: usdcAddress, nullifier: '0x01', amount: 100n }),
+    createNote({ token: usdcAddress, nullifier: '0x02', amount: 200n }),
+    createNote({ token: daiAddress, nullifier: '0x03', amount: 500n }),
+  ]
+
+  const balances = getBalances(notes, new Set())
+
+  t.ok(balances instanceof Map, 'returns a Map')
+  t.is(balances.size, 2, 'contains 2 tokens')
+  t.is(balances.get(usdcAddress), 300n, 'USDC balance correct')
+  t.is(balances.get(daiAddress), 500n, 'DAI balance correct')
+})
+
+test('getBalances: returns empty Map for empty notes', (t) => {
+  const balances = getBalances([], new Set())
+
+  t.ok(balances instanceof Map, 'returns a Map')
+  t.is(balances.size, 0, 'Map is empty')
+})
+
+test('getBalances: excludes tokens with all notes spent', (t) => {
+  const usdcAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+  const daiAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+
+  const notes = [
+    createNote({ token: usdcAddress, nullifier: '0x01', amount: 100n }),
+    createNote({ token: daiAddress, nullifier: '0x02', amount: 500n }),
+  ]
+
+  const spentNullifiers = new Set(['0x01']) // Spent USDC
+  const balances = getBalances(notes, spentNullifiers)
+
+  t.is(balances.size, 1, 'only one token with unspent balance')
+  t.is(balances.get(daiAddress), 500n, 'DAI balance present')
+  t.is(balances.get(usdcAddress), undefined, 'USDC not in map (all spent)')
+})
+
+test('getBalances: handles spent notes correctly', (t) => {
+  const usdcAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+
+  const notes = [
+    createNote({ token: usdcAddress, nullifier: '0x01', amount: 100n }),
+    createNote({ token: usdcAddress, nullifier: '0x02', amount: 200n }),
+    createNote({ token: usdcAddress, nullifier: '0x03', amount: 300n }),
+  ]
+
+  const spentNullifiers = new Set(['0x02'])
+  const balances = getBalances(notes, spentNullifiers)
+
+  t.is(balances.get(usdcAddress), 400n, 'balance excludes spent note')
 })

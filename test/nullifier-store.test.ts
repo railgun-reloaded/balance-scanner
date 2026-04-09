@@ -9,8 +9,10 @@ import {
 import type { ChainDB } from '@railgun-reloaded/storage'
 import { uint8ArrayToHex } from '@railgun-reloaded/wallet-node'
 
+import { aggregateBalances } from '../src/balance'
 import { NullifierCache } from '../src/nullifier-cache'
 import { loadNullifierSet, syncNullifiers } from '../src/nullifier-store'
+import type { DecryptedNote } from '../src/types'
 
 /**
  * Generate random bytes of given size.
@@ -132,17 +134,39 @@ test('loadNullifierSet with initialized cache does incremental update', (t) => {
   t.is(cache.lastBlock, 200n)
 })
 
-test('integration: spent notes excluded from balance set', (t) => {
+/**
+ * Build a DecryptedNote stub for balance aggregation tests.
+ * @param nullifier - Raw nullifier bytes.
+ * @param token - Token address used for grouping.
+ * @param amount - Note amount.
+ * @returns Fully-populated DecryptedNote.
+ */
+function makeNote (nullifier: Uint8Array, token: string, amount: bigint): DecryptedNote {
+  return {
+    commitment: uint8ArrayToHex(randomBytes(32)),
+    walletId: 'test-wallet',
+    nullifier: uint8ArrayToHex(nullifier),
+    token,
+    amount,
+    blockNumber: 100n,
+    treeId: 0,
+    leafIndex: 0n,
+    commitmentType: 'TransactCommitment',
+    outputType: null,
+  }
+}
+
+test('integration: aggregateBalances excludes spent notes from loaded nullifier set', (t) => {
   const db = createTestDb()
 
-  const nullifier1 = randomBytes(32)
-  const nullifier2 = randomBytes(32)
-  const nullifier3 = randomBytes(32)
+  const spentNullifierA = randomBytes(32)
+  const spentNullifierB = randomBytes(32)
+  const unspentNullifier = randomBytes(32)
 
   const event = {
     actionType: 'TransactCommitment',
     txID: randomBytes(32),
-    nullifiers: [nullifier1, nullifier2],
+    nullifiers: [spentNullifierA, spentNullifierB],
     commitments: [],
     boundParamsHash: randomBytes(32),
     utxoBatchStartPositionOut: 0,
@@ -154,16 +178,24 @@ test('integration: spent notes excluded from balance set', (t) => {
   syncNullifiers(db, [event], 100n, randomBytes(32))
   const nullifierSet = loadNullifierSet(db)
 
-  const notes = [
-    { nullifier: uint8ArrayToHex(nullifier1), amount: 100n },
-    { nullifier: uint8ArrayToHex(nullifier2), amount: 200n },
-    { nullifier: uint8ArrayToHex(nullifier3), amount: 300n },
+  const notes: DecryptedNote[] = [
+    makeNote(spentNullifierA, '0xTokenA', 100n),
+    makeNote(spentNullifierB, '0xTokenA', 200n),
+    makeNote(unspentNullifier, '0xTokenA', 300n),
+    makeNote(randomBytes(32), '0xTokenB', 500n),
   ]
 
-  const unspent = notes.filter(n => !nullifierSet.has(n.nullifier))
-  t.is(unspent.length, 1)
-  t.is(unspent[0]!.amount, 300n)
+  const balances = aggregateBalances(notes, nullifierSet)
 
-  const balance = unspent.reduce((sum, n) => sum + n.amount, 0n)
-  t.is(balance, 300n)
+  t.is(balances.length, 2)
+
+  const tokenA = balances.find(b => b.token === '0xTokenA')
+  t.ok(tokenA, 'TokenA balance present')
+  t.is(tokenA!.balance, 300n)
+  t.is(tokenA!.utxos.length, 1)
+  t.is(tokenA!.utxos[0]!.nullifier, uint8ArrayToHex(unspentNullifier))
+
+  const tokenB = balances.find(b => b.token === '0xTokenB')
+  t.ok(tokenB, 'TokenB balance present')
+  t.is(tokenB!.balance, 500n)
 })

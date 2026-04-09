@@ -117,5 +117,30 @@ function getTokenBalance(
   return balances.reduce((sum, b) => sum + b.balance, 0n)
 }
 
+/**
+ * Get all token balances as a Map.
+ *
+ * Convenience function that returns balances in a Map structure
+ * for easy lookup by token address.
+ *
+ * @param notes - All decrypted notes owned by the wallet
+ * @param spentNullifiers - Set of nullifier hashes that have been spent
+ * @returns Map of token address to balance
+ *
+ * @example
+ * ```typescript
+ * const balances = getBalances(allNotes, spentSet)
+ * const usdcBalance = balances.get('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+ * console.log(`USDC: ${usdcBalance}`) // 1000000n
+ * ```
+ */
+function getBalances(
+  notes: DecryptedNote[],
+  spentNullifiers: Set<string>
+): Map<string, bigint> {
+  const balances = aggregateBalances(notes, spentNullifiers)
+  return new Map(balances.map(b => [b.token, b.balance]))
+}
+
 export type { TokenBalance }
-export { aggregateBalances, getTokenBalance }
+export { aggregateBalances, getTokenBalance, getBalances }

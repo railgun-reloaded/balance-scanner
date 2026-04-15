@@ -1,5 +1,4 @@
-import { poseidon } from '@railgun-reloaded/cryptography'
-import { uint8ArrayToHex, bigintToUint8Array } from '@railgun-reloaded/wallet-node'
+import { poseidon, uint8ArrayToHex, bigintToUint8Array } from '@railgun-reloaded/wallet-node'
 
 import type { SpentNoteInfo } from './types'
 

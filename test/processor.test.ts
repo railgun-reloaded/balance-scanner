@@ -1,7 +1,7 @@
 import { ActionType } from '@railgun-reloaded/scanner'
 import type { Transact } from '@railgun-reloaded/scanner'
 import type { TokenDataGetter } from '@railgun-reloaded/wallet-node'
-import { TokenType, initializeCryptographyLibs } from '@railgun-reloaded/wallet-node'
+import { TokenType, initializeCryptographyLibs, hexToUint8Array } from '@railgun-reloaded/wallet-node'
 import { hook, test } from 'brittle'
 
 import { decryptActions } from '../src/processor'
@@ -22,8 +22,11 @@ const mockTokenDataGetter: TokenDataGetter = {
    */
   async getTokenDataFromHash (_txidVersion, _chain, tokenHash) {
     const cleanHash = tokenHash.startsWith('0x') ? tokenHash.slice(2) : tokenHash
-    const addressHex = '0x' + cleanHash.slice(24)
-    return { tokenType: TokenType.ERC20, tokenAddress: addressHex, tokenSubID: '0x' + '00'.repeat(32) }
+    return {
+      tokenType: TokenType.ERC20,
+      tokenAddress: hexToUint8Array('0x' + cleanHash.slice(24)),
+      tokenSubID: hexToUint8Array('0x' + '00'.repeat(32))
+    }
   },
 }
 

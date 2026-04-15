@@ -1,4 +1,4 @@
-import test from 'brittle'
+import { test } from 'brittle'
 
 import type { IndexedCiphertextRecord } from '../../src/ciphertext'
 import { CiphertextIndexer } from '../../src/ciphertext'

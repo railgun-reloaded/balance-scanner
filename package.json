@@ -31,6 +31,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@railgun-reloaded/cryptography": "github:railgun-reloaded/cryptography#main",
     "@railgun-reloaded/scanner": "https://github.com/railgun-reloaded/scanner#dev",
     "@railgun-reloaded/storage": "https://github.com/railgun-reloaded/storage#dev",
     "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node#main",

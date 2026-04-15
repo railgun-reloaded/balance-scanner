@@ -11,15 +11,7 @@ hook('setup cryptography libs', async (t) => {
   t.pass('cryptography libraries initialized')
 })
 
-/** ERC20 token data getter for tests. */
 const mockTokenDataGetter: TokenDataGetter = {
-  /**
-   * Resolves a token hash to ERC20 token data for testing.
-   * @param _txidVersion - Unused TXID version
-   * @param _chain - Unused chain
-   * @param tokenHash - The token hash to resolve
-   * @returns Token data with the extracted address
-   */
   async getTokenDataFromHash (_txidVersion, _chain, tokenHash) {
     const cleanHash = tokenHash.startsWith('0x') ? tokenHash.slice(2) : tokenHash
     return {

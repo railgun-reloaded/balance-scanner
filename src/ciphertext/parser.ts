@@ -36,7 +36,7 @@ function parseTransactCommitment (event: CommitmentEvent): IndexedCiphertextReco
  */
 function parseTransactCommitmentV3 (event: CommitmentEvent): IndexedCiphertextRecord | undefined {
   const { args, blockNumber, transactionHash, transactionIndex, logIndex, name } = event
-  if (!args) return
+  if (!args) return undefined
   if ('ciphertext' in args && args.ciphertext) {
     const { ciphertext, blindedSenderViewingKey, blindedReceiverViewingKey } = args.ciphertext
     return {
@@ -53,7 +53,6 @@ function parseTransactCommitmentV3 (event: CommitmentEvent): IndexedCiphertextRe
       commitmentHash: args.hash,
     }
   }
-
   return undefined
 }
 
@@ -64,7 +63,7 @@ function parseTransactCommitmentV3 (event: CommitmentEvent): IndexedCiphertextRe
  */
 function parseShieldCommitment (event: CommitmentEvent): IndexedCiphertextRecord | undefined {
   const { args, blockNumber, transactionHash, transactionIndex, logIndex, name } = event
-  if (!args) return
+  if (!args) return undefined
   if ('encryptedBundle' in args && Array.isArray(args.encryptedBundle) && 'preimage' in args && args.preimage) {
     return {
       encryptedBundle: args.encryptedBundle,
@@ -89,9 +88,9 @@ function parseShieldCommitment (event: CommitmentEvent): IndexedCiphertextRecord
  */
 function parseLegacyTransactCommitment (event: CommitmentEvent): IndexedCiphertextRecord | undefined {
   const { args, blockNumber, transactionHash, transactionIndex, logIndex, name } = event
-  if (!args) return
-  if ('ciphertext' in args && args.ciphertext && 'memo' in args && 'hash' in args) {
-    const { ciphertext, blindedSenderViewingKey, blindedReceiverViewingKey, annotationData, memo } = args.ciphertext as any
+  if (!args) return undefined
+  if ('ciphertext' in args && args.ciphertext) {
+    const { ciphertext, blindedSenderViewingKey, blindedReceiverViewingKey, annotationData, memo } = args.ciphertext
     return {
       ciphertext,
       blindedSenderViewingKey,
@@ -118,7 +117,7 @@ function parseLegacyTransactCommitment (event: CommitmentEvent): IndexedCipherte
  */
 function parseLegacyShieldCommitment (event: CommitmentEvent): IndexedCiphertextRecord | undefined {
   const { args, blockNumber, transactionHash, transactionIndex, logIndex, name } = event
-  if (!args) return
+  if (!args) return undefined
   if ('encryptedBundle' in args && Array.isArray(args.encryptedBundle) && 'preimage' in args && args.preimage) {
     return {
       encryptedBundle: args.encryptedBundle,

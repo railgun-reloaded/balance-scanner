@@ -4,7 +4,6 @@ export type {
   IndexedCiphertextRecord,
   IndexConfig,
   CiphertextIndexerOptions,
-  CommitmentType,
   IndexedTransactCommitmentRecord
 } from './types'
-export { COMMITMENT_TYPE } from './types'
+export { CommitmentType } from './types'

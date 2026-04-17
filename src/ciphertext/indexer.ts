@@ -6,7 +6,7 @@ import {
   parseTransactCommitmentV3
 } from './parser'
 import type { CiphertextIndexKey, CiphertextIndexerOptions, CommitmentEvent, IndexConfig, IndexedCiphertextRecord, PrimaryIndexOption } from './types'
-import { COMMITMENT_TYPE } from './types'
+import { CommitmentType } from './types'
 import { hasCiphertext } from './utils'
 
 /**
@@ -73,19 +73,19 @@ class CiphertextIndexer {
     let record: IndexedCiphertextRecord | undefined
 
     switch (event.args['commitmentType']) {
-      case COMMITMENT_TYPE.LegacyTransactCommitment:
+      case CommitmentType.LegacyTransactCommitment:
         record = parseLegacyTransactCommitment(event)
         break
-      case COMMITMENT_TYPE.LegacyShieldCommitment:
+      case CommitmentType.LegacyShieldCommitment:
         record = parseLegacyShieldCommitment(event)
         break
-      case COMMITMENT_TYPE.TransactCommitment:
+      case CommitmentType.TransactCommitment:
         record = parseTransactCommitment(event)
         break
-      case COMMITMENT_TYPE.ShieldCommitment:
+      case CommitmentType.ShieldCommitment:
         record = parseShieldCommitment(event)
         break
-      case COMMITMENT_TYPE.TransactCommitmentV3:
+      case CommitmentType.TransactCommitmentV3:
         record = parseTransactCommitmentV3(event)
         break
       default:

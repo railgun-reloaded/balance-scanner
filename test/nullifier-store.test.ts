@@ -1,13 +1,13 @@
 import crypto from 'crypto'
 
-import { test } from 'brittle'
+import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { Transact } from '@railgun-reloaded/scanner'
+import type { ChainDB } from '@railgun-reloaded/storage'
 import {
   createChainDB,
   getNullifiersByBlockRange,
 } from '@railgun-reloaded/storage'
-import type { ChainDB } from '@railgun-reloaded/storage'
-import { uint8ArrayToHex } from '@railgun-reloaded/wallet-node'
+import { test } from 'brittle'
 
 import { aggregateBalances } from '../src/balance'
 import { NullifierCache } from '../src/nullifier-cache'
@@ -80,7 +80,7 @@ test('syncNullifiers updates cache when provided', (t) => {
   t.is(cache.size, 3)
   t.is(cache.lastBlock, 100n)
   for (const n of event.nullifiers) {
-    t.ok(cache.nullifiers.has(uint8ArrayToHex(n)))
+    t.ok(cache.nullifiers.has(bytesToHex(n, { prefix: true })))
   }
 })
 
@@ -104,7 +104,7 @@ test('loadNullifierSet without cache does full load', (t) => {
 
   t.is(set.size, 4)
   for (const n of event.nullifiers) {
-    t.ok(set.has(uint8ArrayToHex(n)))
+    t.ok(set.has(bytesToHex(n, { prefix: true })))
   }
 })
 
@@ -143,9 +143,9 @@ test('loadNullifierSet with initialized cache does incremental update', (t) => {
  */
 function makeNote (nullifier: Uint8Array, token: string, amount: bigint): DecryptedNote {
   return {
-    commitment: uint8ArrayToHex(randomBytes(32)),
+    commitment: bytesToHex(randomBytes(32), { prefix: true }),
     walletId: 'test-wallet',
-    nullifier: uint8ArrayToHex(nullifier),
+    nullifier: bytesToHex(nullifier, { prefix: true }),
     token,
     amount,
     blockNumber: 100n,
@@ -193,7 +193,7 @@ test('integration: aggregateBalances excludes spent notes from loaded nullifier 
   t.ok(tokenA, 'TokenA balance present')
   t.is(tokenA!.balance, 300n)
   t.is(tokenA!.utxos.length, 1)
-  t.is(tokenA!.utxos[0]!.nullifier, uint8ArrayToHex(unspentNullifier))
+  t.is(tokenA!.utxos[0]!.nullifier, bytesToHex(unspentNullifier, { prefix: true }))
 
   const tokenB = balances.find(b => b.token === '0xTokenB')
   t.ok(tokenB, 'TokenB balance present')

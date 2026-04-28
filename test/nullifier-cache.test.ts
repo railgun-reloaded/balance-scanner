@@ -1,17 +1,20 @@
 import crypto from 'crypto'
 
-import { test } from 'brittle'
+import { bytesToHex } from '@railgun-reloaded/bytes'
+import type { ChainDB } from '@railgun-reloaded/storage'
 import {
   createChainDB,
   deleteNullifiersFromBlock,
   insertNullifiersBatch,
 } from '@railgun-reloaded/storage'
-import type { ChainDB } from '@railgun-reloaded/storage'
-import { uint8ArrayToHex } from '@railgun-reloaded/wallet-node'
+import { test } from 'brittle'
 
 import { NullifierCache } from '../src/nullifier-cache'
 
-/** Generate random bytes for test data. */
+/**
+ * Generate random bytes for test data.
+ * @param size
+ */
 function randomBytes (size: number): Uint8Array {
   return Uint8Array.from(crypto.randomBytes(size))
 }
@@ -37,7 +40,7 @@ function insertTestNullifiers (db: ChainDB, count: number, startBlock: bigint): 
   const hexValues: string[] = []
   for (let i = 0; i < count; i++) {
     const nullifier = randomBytes(32)
-    hexValues.push(uint8ArrayToHex(nullifier))
+    hexValues.push(bytesToHex(nullifier, { prefix: true }))
     batch.push({
       nullifier,
       transactionHash: randomBytes(32),

@@ -1,3 +1,4 @@
+import { bytesToHex, hexToBytes } from '@railgun-reloaded/bytes'
 import type { EncryptedCommitment, Transact, TransactCommitment } from '@railgun-reloaded/scanner'
 import type { Chain, NoteAnnotationData, TokenDataGetter } from '@railgun-reloaded/wallet-node'
 import {
@@ -5,8 +6,6 @@ import {
   Memo,
   TXIDVersion,
   decryptCommitmentAsReceiverOrSender,
-  uint8ArrayToHex,
-  hexToUint8Array,
 } from '@railgun-reloaded/wallet-node'
 
 import { computeNullifier } from './nullifier'
@@ -85,10 +84,10 @@ function buildReceivedNote (
   const nullifier = computeNullifier(ctx.nullifyingKey, leafIndex)
 
   return {
-    commitment: uint8ArrayToHex(hash),
+    commitment: bytesToHex(hash, { prefix: true }),
     walletId: ctx.walletId,
-    nullifier: uint8ArrayToHex(nullifier),
-    token: uint8ArrayToHex(receiverData.tokenData.tokenAddress),
+    nullifier: bytesToHex(nullifier, { prefix: true }),
+    token: bytesToHex(receiverData.tokenData.tokenAddress, { prefix: true }),
     amount: receiverData.value,
     blockNumber: ctx.blockNumber,
     treeId: treeNumber,
@@ -112,6 +111,7 @@ function buildReceivedNote (
  * @param recipientMPK - Decoded recipient master public key
  * @param annotationData - Decrypted annotation data
  * @param treeNumber - Merkle tree number
+ * @param recipientMPKHex
  * @returns A DecryptedSentNote ready for the caller to persist
  */
 function buildSentNote (
@@ -125,10 +125,10 @@ function buildSentNote (
   treeNumber: number
 ): DecryptedSentNote {
   return {
-    commitment: uint8ArrayToHex(hash),
+    commitment: bytesToHex(hash, { prefix: true }),
     walletId: ctx.walletId,
     txid: ctx.txid,
-    token: uint8ArrayToHex(senderData.tokenData.tokenAddress),
+    token: bytesToHex(senderData.tokenData.tokenAddress, { prefix: true }),
     amount: senderData.value,
     outputType: annotationData?.outputType ?? null,
     walletSource: annotationData?.walletSource ?? null,
@@ -186,9 +186,9 @@ async function tryDecryptTransactCommitment (
   }
 
   if (senderData) {
-    const encodedMPKBytes = hexToUint8Array(senderData.encodedMPK)
+    const encodedMPKBytes = hexToBytes(senderData.encodedMPK)
     const recipientMPKBytes = decodeRecipientMPK(encodedMPKBytes, ctx.masterPublicKey, annotationData)
-    const recipientMPKHex = uint8ArrayToHex(recipientMPKBytes)
+    const recipientMPKHex = bytesToHex(recipientMPKBytes, { prefix: true })
     sentNote = buildSentNote(
       commitment.hash, ctx, senderData, leafIndex,
       'TransactCommitmentV2', recipientMPKHex, annotationData, commitment.treeNumber
@@ -203,6 +203,8 @@ async function tryDecryptTransactCommitment (
  * Uses legacy ECDH (no SHA-256 hash on the shared key) and ephemeralKeys.
  * @param commitment - The legacy encrypted commitment to decrypt
  * @param ctx - Wallet keys and block context
+ * @param _commitment
+ * @param _ctx
  * @returns A DecryptResult with receivedNote and/or sentNote
  */
 async function tryDecryptLegacyEncryptedCommitment (

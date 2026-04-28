@@ -16,15 +16,12 @@ type TokenBalance = {
  * Aggregates unspent UTXO balances per token address.
  *
  * Currently supports ERC20 tokens only (tokenType = 0).
- *
  * @param notes - All decrypted notes owned by the wallet
  * @param spentNullifiers - Set of nullifier hashes that have been spent
  * @returns Array of token balances, one per unique token address
- *
  * @TODO Add support for ERC721 (tokenType = 1) when NFT features are implemented.
  *       For ERC721, balance computation may need different semantics (count vs sum).
  * @TODO ERC1155 (tokenType = 2) is not yet supported in RAILGUN contracts.
- *
  * @example
  * ```typescript
  * const notes = [
@@ -41,7 +38,7 @@ type TokenBalance = {
  * // ]
  * ```
  */
-function aggregateBalances(
+function aggregateBalances (
   notes: DecryptedNote[],
   spentNullifiers: Set<string>
 ): TokenBalance[] {
@@ -79,12 +76,10 @@ function aggregateBalances(
  *
  * Convenience function that filters notes by token address and returns
  * the total unspent balance. Case-insensitive address matching.
- *
  * @param tokenAddress - ERC20 token contract address (case-insensitive)
  * @param notes - All decrypted notes owned by the wallet
  * @param spentNullifiers - Set of nullifier hashes that have been spent
  * @returns Total unspent balance for the token, or 0n if no balance
- *
  * @example
  * ```typescript
  * const usdcAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
@@ -92,7 +87,7 @@ function aggregateBalances(
  * console.log(`USDC Balance: ${usdcBalance}`) // 1000000n (1 USDC with 6 decimals)
  * ```
  */
-function getTokenBalance(
+function getTokenBalance (
   tokenAddress: string,
   notes: DecryptedNote[],
   spentNullifiers: Set<string>
@@ -122,11 +117,9 @@ function getTokenBalance(
  *
  * Convenience function that returns balances in a Map structure
  * for easy lookup by token address.
- *
  * @param notes - All decrypted notes owned by the wallet
  * @param spentNullifiers - Set of nullifier hashes that have been spent
  * @returns Map of token address to balance
- *
  * @example
  * ```typescript
  * const balances = getBalances(allNotes, spentSet)
@@ -134,7 +127,7 @@ function getTokenBalance(
  * console.log(`USDC: ${usdcBalance}`) // 1000000n
  * ```
  */
-function getBalances(
+function getBalances (
   notes: DecryptedNote[],
   spentNullifiers: Set<string>
 ): Map<string, bigint> {

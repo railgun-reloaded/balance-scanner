@@ -1,4 +1,5 @@
-import { poseidon, uint8ArrayToHex, bigintToUint8Array } from '@railgun-reloaded/wallet-node'
+import { bigIntToBytes, bytesToHex } from '@railgun-reloaded/bytes'
+import { poseidon } from '@railgun-reloaded/wallet-node'
 
 import type { SpentNoteInfo } from './types'
 
@@ -11,7 +12,7 @@ import type { SpentNoteInfo } from './types'
  */
 function computeNullifier (nullifyingKey: Uint8Array, leafIndex: bigint): Uint8Array {
   // poseidon expects Uint8Array inputs, leafIndex needs to be converted
-  const leafIndexBytes = bigintToUint8Array(leafIndex, 32)
+  const leafIndexBytes = bigIntToBytes(leafIndex, 32)
   return poseidon([nullifyingKey, leafIndexBytes])
 }
 
@@ -26,7 +27,7 @@ function processNullifiers (
   nullifiers: Uint8Array[],
   notes: SpentNoteInfo[]
 ): SpentNoteInfo[] {
-  const nullifierSet = new Set(nullifiers.map((n) => uint8ArrayToHex(n)))
+  const nullifierSet = new Set(nullifiers.map((n) => bytesToHex(n, { prefix: true })))
   return notes.filter((note) => nullifierSet.has(note.nullifier))
 }
 

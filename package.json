@@ -16,7 +16,11 @@
     "type": "git",
     "url": "git+https://git@github.com/railgun-reloaded/balance-scanner.git"
   },
-  "keywords": ["railgun", "privacy", "balance scanner"],
+  "keywords": [
+    "railgun",
+    "privacy",
+    "balance scanner"
+  ],
   "author": "RAILGUN Project Contributors",
   "license": "MIT",
   "bugs": {
@@ -31,11 +35,12 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@railgun-reloaded/bytes": "file:../bytes",
+    "@railgun-reloaded/eslint-config": "^1.1.0",
     "@railgun-reloaded/scanner": "https://github.com/railgun-reloaded/scanner#dev",
     "@railgun-reloaded/storage": "https://github.com/railgun-reloaded/storage#dev",
-    "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node#main",
-    "@railgun-reloaded/eslint-config": "^1.1.0",
     "@railgun-reloaded/tsconfig": "https://github.com/railgun-reloaded/tsconfig#main",
+    "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node#main",
     "@types/node": "^24.0.11",
     "brittle": "^3.19.1"
   }

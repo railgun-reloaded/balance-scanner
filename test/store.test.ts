@@ -1,13 +1,13 @@
 import crypto from 'crypto'
 
-import { test } from 'brittle'
+import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { WalletDB } from '@railgun-reloaded/storage'
 import {
   createWallet,
   createWalletDB,
   getAllNotes,
 } from '@railgun-reloaded/storage'
-import { uint8ArrayToHex } from '@railgun-reloaded/wallet-node'
+import { test } from 'brittle'
 
 import { storeDecryptedNotes } from '../src/store.js'
 import type { DecryptedNote } from '../src/types.js'
@@ -36,9 +36,9 @@ function createTestWalletDb (): WalletDB {
  */
 function makeNote (overrides: Partial<DecryptedNote> = {}): DecryptedNote {
   return {
-    commitment: uint8ArrayToHex(randomBytes(32)),
+    commitment: bytesToHex(randomBytes(32), { prefix: true }),
     walletId: 'test-wallet',
-    nullifier: uint8ArrayToHex(randomBytes(32)),
+    nullifier: bytesToHex(randomBytes(32), { prefix: true }),
     token: '0x0000000000000000000000000000000000000000',
     amount: 1000n,
     blockNumber: 100n,

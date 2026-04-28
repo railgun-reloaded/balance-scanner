@@ -1,8 +1,6 @@
+import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { Shield } from '@railgun-reloaded/scanner'
-import {
-  ShieldNote,
-  uint8ArrayToHex,
-} from '@railgun-reloaded/wallet-node'
+import { ShieldNote } from '@railgun-reloaded/wallet-node'
 
 import { computeNullifier } from './nullifier'
 import type { DecryptedNote } from './types'
@@ -44,10 +42,10 @@ export async function processShieldAction (
   const commitmentType = 'encryptedRandom' in commitment ? 'GeneratedCommitment' : 'ShieldCommitment'
 
   return [{
-    commitment: uint8ArrayToHex(commitment.hash),
+    commitment: bytesToHex(commitment.hash, { prefix: true }),
     walletId: ctx.walletId,
-    nullifier: uint8ArrayToHex(nullifier),
-    token: uint8ArrayToHex(shieldNote.tokenData.tokenAddress),
+    nullifier: bytesToHex(nullifier, { prefix: true }),
+    token: bytesToHex(shieldNote.tokenData.tokenAddress, { prefix: true }),
     amount: shieldNote.value,
     blockNumber: ctx.blockNumber,
     treeId: commitment.treeNumber,

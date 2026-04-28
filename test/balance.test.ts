@@ -3,6 +3,10 @@ import { test } from 'brittle'
 import { aggregateBalances, getBalances } from '../src/balance'
 import type { DecryptedNote } from '../src/types'
 
+/**
+ *
+ * @param overrides
+ */
 const createNote = (overrides: Partial<DecryptedNote>): DecryptedNote => ({
   commitment: '0x0000000000000000000000000000000000000000000000000000000000000000',
   walletId: 'test-wallet',

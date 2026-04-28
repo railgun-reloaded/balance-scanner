@@ -1,10 +1,10 @@
+import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { Transact } from '@railgun-reloaded/scanner'
 import type { ChainDB } from '@railgun-reloaded/storage'
 import {
   getAllNullifiers,
   insertNullifiersBatch,
 } from '@railgun-reloaded/storage'
-import { uint8ArrayToHex } from '@railgun-reloaded/wallet-node'
 
 import type { NullifierCache } from './nullifier-cache'
 
@@ -43,7 +43,7 @@ function syncNullifiers (
 
   if (cache) {
     for (const entry of batch) {
-      cache.addDirect(uint8ArrayToHex(entry.nullifier), blockNumber)
+      cache.addDirect(bytesToHex(entry.nullifier, { prefix: true }), blockNumber)
     }
   }
 }
@@ -71,7 +71,7 @@ function loadNullifierSet (
   const rows = getAllNullifiers(chainDb)
   const set = new Set<string>()
   for (const row of rows) {
-    set.add(uint8ArrayToHex(row.nullifier as Uint8Array))
+    set.add(bytesToHex(row.nullifier as Uint8Array, { prefix: true }))
   }
   return set
 }

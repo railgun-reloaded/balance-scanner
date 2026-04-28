@@ -1,14 +1,23 @@
+import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { ChainDB } from '@railgun-reloaded/storage'
 import { getAllNullifiers, getNullifiersFromBlock } from '@railgun-reloaded/storage'
-import { uint8ArrayToHex } from '@railgun-reloaded/wallet-node'
 
 /**
  * In-memory cache for nullifier hex strings with block-tracked incremental updates.
  * One instance per chain. The caller manages lifecycle.
  */
 class NullifierCache {
+  /**
+   *
+   */
   #set: Set<string>
+  /**
+   *
+   */
   #lastBlockLoaded: bigint
+  /**
+   *
+   */
   #initialized: boolean
 
   /** Create a new empty cache. */
@@ -27,7 +36,7 @@ class NullifierCache {
     this.#lastBlockLoaded = -1n
     const rows = getAllNullifiers(chainDb)
     for (const row of rows) {
-      this.#set.add(uint8ArrayToHex(row.nullifier as Uint8Array))
+      this.#set.add(bytesToHex(row.nullifier as Uint8Array, { prefix: true }))
       if (row.blockNumber > this.#lastBlockLoaded) {
         this.#lastBlockLoaded = row.blockNumber
       }
@@ -48,7 +57,7 @@ class NullifierCache {
 
     const rows = getNullifiersFromBlock(chainDb, this.#lastBlockLoaded + 1n)
     for (const row of rows) {
-      this.#set.add(uint8ArrayToHex(row.nullifier as Uint8Array))
+      this.#set.add(bytesToHex(row.nullifier as Uint8Array, { prefix: true }))
       if (row.blockNumber > this.#lastBlockLoaded) {
         this.#lastBlockLoaded = row.blockNumber
       }

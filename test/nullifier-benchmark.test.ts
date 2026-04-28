@@ -1,11 +1,11 @@
 import crypto from 'crypto'
 
-import { test } from 'brittle'
+import type { ChainDB } from '@railgun-reloaded/storage'
 import {
   createChainDB,
   insertNullifiersBatch,
 } from '@railgun-reloaded/storage'
-import type { ChainDB } from '@railgun-reloaded/storage'
+import { test } from 'brittle'
 
 import { NullifierCache } from '../src/nullifier-cache'
 import { loadNullifierSet } from '../src/nullifier-store'

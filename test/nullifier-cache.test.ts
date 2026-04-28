@@ -13,7 +13,8 @@ import { NullifierCache } from '../src/nullifier-cache'
 
 /**
  * Generate random bytes for test data.
- * @param size
+ * @param size - Number of random bytes to produce.
+ * @returns Random Uint8Array of the requested size.
  */
 function randomBytes (size: number): Uint8Array {
   return Uint8Array.from(crypto.randomBytes(size))

@@ -7,17 +7,11 @@ import { getAllNullifiers, getNullifiersFromBlock } from '@railgun-reloaded/stor
  * One instance per chain. The caller manages lifecycle.
  */
 class NullifierCache {
-  /**
-   *
-   */
+  /** The set of 0x-prefixed hex nullifier strings. */
   #set: Set<string>
-  /**
-   *
-   */
+  /** Highest block number loaded into the cache, or -1n if empty. */
   #lastBlockLoaded: bigint
-  /**
-   *
-   */
+  /** Whether the cache has been initialized at least once. */
   #initialized: boolean
 
   /** Create a new empty cache. */

@@ -4,8 +4,10 @@ import { aggregateBalances, getBalances } from '../src/balance'
 import type { DecryptedNote } from '../src/types'
 
 /**
- *
- * @param overrides
+ * Build a `DecryptedNote` test fixture with sane defaults, allowing
+ * individual fields to be overridden per test case.
+ * @param overrides - Fields to replace on the default note.
+ * @returns A fully-populated `DecryptedNote`.
  */
 const createNote = (overrides: Partial<DecryptedNote>): DecryptedNote => ({
   commitment: '0x0000000000000000000000000000000000000000000000000000000000000000',

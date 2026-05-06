@@ -14,7 +14,7 @@ function toNoteInput (note: DecryptedNote): NoteInput {
     commitment: note.commitment,
     walletId: note.walletId,
     nullifier: note.nullifier,
-    token: note.token,
+    token: note.token.toLowerCase(),
     amount: note.amount,
     blockNumber: note.blockNumber,
     treeNumber: note.treeId,

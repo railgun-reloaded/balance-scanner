@@ -9,7 +9,7 @@ import {
 } from '@railgun-reloaded/storage'
 import { test } from 'brittle'
 
-import { storeDecryptedNotes } from '../src/store.js'
+import { storeDecryptedNotes, toNoteInput } from '../src/store.js'
 import type { DecryptedNote } from '../src/types.js'
 
 /**
@@ -97,4 +97,12 @@ test('storeDecryptedNotes correctly maps treeId to treeNumber and leafIndex to t
   t.is(stored.length, 1, 'one note stored')
   t.is(stored[0]!.treeNumber, 3, 'treeId mapped to treeNumber')
   t.is(stored[0]!.treePosition, 42, 'leafIndex mapped to treePosition')
+})
+
+test('toNoteInput lowercases the token address regardless of input case', (t) => {
+  const checksumAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+
+  t.is(toNoteInput(makeNote({ token: checksumAddress })).token, checksumAddress.toLowerCase())
+  t.is(toNoteInput(makeNote({ token: checksumAddress.toUpperCase() })).token, checksumAddress.toLowerCase())
+  t.is(toNoteInput(makeNote({ token: checksumAddress.toLowerCase() })).token, checksumAddress.toLowerCase())
 })

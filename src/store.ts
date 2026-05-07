@@ -4,6 +4,17 @@ import { insertNotesBatch, toDBNotes } from '@railgun-reloaded/storage'
 import type { DecryptedNote } from './types'
 
 /**
+ * Canonical form for ERC-20 token addresses crossing into the storage layer.
+ * Lowercased so storage's case-insensitive lookups never miss rows written
+ * through this boundary, regardless of how the upstream cased the address.
+ * @param token - Token address in any case.
+ * @returns Lowercase token address.
+ */
+function normalizeToken (token: string): string {
+  return token.toLowerCase()
+}
+
+/**
  * Maps a DecryptedNote to the NoteInput shape required by the storage layer.
  * Drops fields not stored (commitmentType, outputType) and renames treeId and leafIndex.
  * @param note - The decrypted note to convert.
@@ -14,7 +25,7 @@ function toNoteInput (note: DecryptedNote): NoteInput {
     commitment: note.commitment,
     walletId: note.walletId,
     nullifier: note.nullifier,
-    token: note.token.toLowerCase(),
+    token: normalizeToken(note.token),
     amount: note.amount,
     blockNumber: note.blockNumber,
     treeNumber: note.treeId,

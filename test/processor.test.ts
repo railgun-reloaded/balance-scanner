@@ -1,15 +1,16 @@
+import assert from 'node:assert/strict'
+import { before, test } from 'node:test'
+
 import { hexToBytes } from '@railgun-reloaded/bytes'
 import type { Transact } from '@railgun-reloaded/scanner'
 import { ActionType } from '@railgun-reloaded/scanner'
 import type { TokenDataGetter } from '@railgun-reloaded/wallet-node'
 import { TokenType, initializeCryptographyLibs } from '@railgun-reloaded/wallet-node'
-import { hook, test } from 'brittle'
 
 import { decryptActions } from '../src/processor'
 
-hook('setup cryptography libs', async (t) => {
+before(async () => {
   await initializeCryptographyLibs()
-  t.pass('cryptography libraries initialized')
 })
 
 const mockTokenDataGetter: TokenDataGetter = {
@@ -42,16 +43,16 @@ const mockCtx = {
   tokenDataGetter: mockTokenDataGetter,
 }
 
-test('decryptActions returns empty arrays for empty action list', async (t) => {
+test('decryptActions returns empty arrays for empty action list', async () => {
   const result = await decryptActions([], mockCtx)
 
-  t.ok(Array.isArray(result.receivedNotes), 'returns receivedNotes array')
-  t.ok(Array.isArray(result.sentNotes), 'returns sentNotes array')
-  t.is(result.receivedNotes.length, 0, 'zero received notes')
-  t.is(result.sentNotes.length, 0, 'zero sent notes')
+  assert.ok(Array.isArray(result.receivedNotes), 'returns receivedNotes array')
+  assert.ok(Array.isArray(result.sentNotes), 'returns sentNotes array')
+  assert.equal(result.receivedNotes.length, 0, 'zero received notes')
+  assert.equal(result.sentNotes.length, 0, 'zero sent notes')
 })
 
-test('decryptActions returns empty arrays when commitments are not decryptable', async (t) => {
+test('decryptActions returns empty arrays when commitments are not decryptable', async () => {
   const action: Transact = {
     actionType: ActionType.TransactCommitment,
     txID: new Uint8Array(32),
@@ -77,8 +78,8 @@ test('decryptActions returns empty arrays when commitments are not decryptable',
 
   const result = await decryptActions([action], mockCtx)
 
-  t.ok(Array.isArray(result.receivedNotes), 'returns receivedNotes array')
-  t.ok(Array.isArray(result.sentNotes), 'returns sentNotes array')
-  t.is(result.receivedNotes.length, 0, 'non-decryptable commitment returns no received notes')
-  t.is(result.sentNotes.length, 0, 'non-decryptable commitment returns no sent notes')
+  assert.ok(Array.isArray(result.receivedNotes), 'returns receivedNotes array')
+  assert.ok(Array.isArray(result.sentNotes), 'returns sentNotes array')
+  assert.equal(result.receivedNotes.length, 0, 'non-decryptable commitment returns no received notes')
+  assert.equal(result.sentNotes.length, 0, 'non-decryptable commitment returns no sent notes')
 })

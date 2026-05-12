@@ -1,4 +1,6 @@
 import crypto from 'crypto'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
 import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { Transact } from '@railgun-reloaded/scanner'
@@ -7,7 +9,6 @@ import {
   createChainDB,
   getNullifiersByBlockRange,
 } from '@railgun-reloaded/storage'
-import { test } from 'brittle'
 
 import { aggregateBalances } from '../src/balance'
 import { NullifierCache } from '../src/nullifier-cache'
@@ -56,7 +57,7 @@ function createMockTransact (nullifierCount: number, treeIn: number): Transact {
   } as unknown as Transact
 }
 
-test('syncNullifiers persists nullifiers from Transact events', (t) => {
+test('syncNullifiers persists nullifiers from Transact events', () => {
   const db = createTestDb()
   const event1 = createMockTransact(3, 0)
   const event2 = createMockTransact(2, 1)
@@ -65,10 +66,10 @@ test('syncNullifiers persists nullifiers from Transact events', (t) => {
   syncNullifiers(db, [event1, event2], 100n, txHash)
 
   const stored = getNullifiersByBlockRange(db, 100n, 100n)
-  t.is(stored.length, 5)
+  assert.equal(stored.length, 5)
 })
 
-test('syncNullifiers updates cache when provided', (t) => {
+test('syncNullifiers updates cache when provided', () => {
   const db = createTestDb()
   const event = createMockTransact(3, 0)
   const txHash = randomBytes(32)
@@ -77,24 +78,24 @@ test('syncNullifiers updates cache when provided', (t) => {
 
   syncNullifiers(db, [event], 100n, txHash, cache)
 
-  t.is(cache.size, 3)
-  t.is(cache.lastBlock, 100n)
+  assert.equal(cache.size, 3)
+  assert.equal(cache.lastBlock, 100n)
   for (const n of event.nullifiers) {
-    t.ok(cache.nullifiers.has(bytesToHex(n, { prefix: true })))
+    assert.ok(cache.nullifiers.has(bytesToHex(n, { prefix: true })))
   }
 })
 
-test('syncNullifiers with empty events does nothing', (t) => {
+test('syncNullifiers with empty events does nothing', () => {
   const db = createTestDb()
   const txHash = randomBytes(32)
 
   syncNullifiers(db, [], 100n, txHash)
 
   const stored = getNullifiersByBlockRange(db, 0n, 200n)
-  t.is(stored.length, 0)
+  assert.equal(stored.length, 0)
 })
 
-test('loadNullifierSet without cache does full load', (t) => {
+test('loadNullifierSet without cache does full load', () => {
   const db = createTestDb()
   const event = createMockTransact(4, 0)
   const txHash = randomBytes(32)
@@ -102,13 +103,13 @@ test('loadNullifierSet without cache does full load', (t) => {
 
   const set = loadNullifierSet(db)
 
-  t.is(set.size, 4)
+  assert.equal(set.size, 4)
   for (const n of event.nullifiers) {
-    t.ok(set.has(bytesToHex(n, { prefix: true })))
+    assert.ok(set.has(bytesToHex(n, { prefix: true })))
   }
 })
 
-test('loadNullifierSet with uninitialized cache initializes it', (t) => {
+test('loadNullifierSet with uninitialized cache initializes it', () => {
   const db = createTestDb()
   const event = createMockTransact(3, 0)
   syncNullifiers(db, [event], 100n, randomBytes(32))
@@ -116,22 +117,22 @@ test('loadNullifierSet with uninitialized cache initializes it', (t) => {
 
   const set = loadNullifierSet(db, cache)
 
-  t.is(set.size, 3)
-  t.ok(cache.isInitialized)
+  assert.equal(set.size, 3)
+  assert.ok(cache.isInitialized)
 })
 
-test('loadNullifierSet with initialized cache does incremental update', (t) => {
+test('loadNullifierSet with initialized cache does incremental update', () => {
   const db = createTestDb()
   syncNullifiers(db, [createMockTransact(3, 0)], 100n, randomBytes(32))
   const cache = new NullifierCache()
   cache.initialize(db)
-  t.is(cache.size, 3)
+  assert.equal(cache.size, 3)
 
   syncNullifiers(db, [createMockTransact(2, 0)], 200n, randomBytes(32))
   const set = loadNullifierSet(db, cache)
 
-  t.is(set.size, 5)
-  t.is(cache.lastBlock, 200n)
+  assert.equal(set.size, 5)
+  assert.equal(cache.lastBlock, 200n)
 })
 
 /**
@@ -156,7 +157,7 @@ function makeNote (nullifier: Uint8Array, token: string, amount: bigint): Decryp
   }
 }
 
-test('integration: aggregateBalances excludes spent notes from loaded nullifier set', (t) => {
+test('integration: aggregateBalances excludes spent notes from loaded nullifier set', () => {
   const db = createTestDb()
 
   const spentNullifierA = randomBytes(32)
@@ -187,15 +188,15 @@ test('integration: aggregateBalances excludes spent notes from loaded nullifier 
 
   const balances = aggregateBalances(notes, nullifierSet)
 
-  t.is(balances.length, 2)
+  assert.equal(balances.length, 2)
 
   const tokenA = balances.find(b => b.token === '0xTokenA')
-  t.ok(tokenA, 'TokenA balance present')
-  t.is(tokenA!.balance, 300n)
-  t.is(tokenA!.utxos.length, 1)
-  t.is(tokenA!.utxos[0]!.nullifier, bytesToHex(unspentNullifier, { prefix: true }))
+  assert.ok(tokenA, 'TokenA balance present')
+  assert.equal(tokenA!.balance, 300n)
+  assert.equal(tokenA!.utxos.length, 1)
+  assert.equal(tokenA!.utxos[0]!.nullifier, bytesToHex(unspentNullifier, { prefix: true }))
 
   const tokenB = balances.find(b => b.token === '0xTokenB')
-  t.ok(tokenB, 'TokenB balance present')
-  t.is(tokenB!.balance, 500n)
+  assert.ok(tokenB, 'TokenB balance present')
+  assert.equal(tokenB!.balance, 500n)
 })

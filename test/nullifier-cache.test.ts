@@ -1,4 +1,6 @@
 import crypto from 'crypto'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
 
 import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { ChainDB } from '@railgun-reloaded/storage'
@@ -7,7 +9,6 @@ import {
   deleteNullifiersFromBlock,
   insertNullifiersBatch,
 } from '@railgun-reloaded/storage'
-import { test } from 'brittle'
 
 import { NullifierCache } from '../src/nullifier-cache'
 
@@ -56,69 +57,69 @@ function insertTestNullifiers (db: ChainDB, count: number, startBlock: bigint): 
   return hexValues
 }
 
-test('NullifierCache: initialize loads all nullifiers', (t) => {
+test('NullifierCache: initialize loads all nullifiers', () => {
   const db = createTestDb()
   const hexValues = insertTestNullifiers(db, 5, 100n)
   const cache = new NullifierCache()
 
   cache.initialize(db)
 
-  t.is(cache.size, 5)
+  assert.equal(cache.size, 5)
   for (const hex of hexValues) {
-    t.ok(cache.nullifiers.has(hex))
+    assert.ok(cache.nullifiers.has(hex))
   }
-  t.is(cache.lastBlock, 104n)
+  assert.equal(cache.lastBlock, 104n)
 })
 
-test('NullifierCache: initialize on empty db', (t) => {
+test('NullifierCache: initialize on empty db', () => {
   const db = createTestDb()
   const cache = new NullifierCache()
 
   cache.initialize(db)
 
-  t.is(cache.size, 0)
-  t.is(cache.lastBlock, -1n)
+  assert.equal(cache.size, 0)
+  assert.equal(cache.lastBlock, -1n)
 })
 
-test('NullifierCache: update adds only new nullifiers', (t) => {
+test('NullifierCache: update adds only new nullifiers', () => {
   const db = createTestDb()
   const initial = insertTestNullifiers(db, 3, 100n)
   const cache = new NullifierCache()
   cache.initialize(db)
-  t.is(cache.size, 3)
+  assert.equal(cache.size, 3)
 
   const added = insertTestNullifiers(db, 4, 200n)
   const count = cache.update(db)
 
-  t.is(count, 4)
-  t.is(cache.size, 7)
-  t.is(cache.lastBlock, 203n)
+  assert.equal(count, 4)
+  assert.equal(cache.size, 7)
+  assert.equal(cache.lastBlock, 203n)
   for (const hex of [...initial, ...added]) {
-    t.ok(cache.nullifiers.has(hex))
+    assert.ok(cache.nullifiers.has(hex))
   }
 })
 
-test('NullifierCache: update with no new nullifiers', (t) => {
+test('NullifierCache: update with no new nullifiers', () => {
   const db = createTestDb()
   insertTestNullifiers(db, 3, 100n)
   const cache = new NullifierCache()
   cache.initialize(db)
 
   const count = cache.update(db)
-  t.is(count, 0)
-  t.is(cache.size, 3)
+  assert.equal(count, 0)
+  assert.equal(cache.size, 3)
 })
 
-test('NullifierCache: handleReorg clears and reloads', (t) => {
+test('NullifierCache: handleReorg clears and reloads', () => {
   const db = createTestDb()
   insertTestNullifiers(db, 5, 100n)
   const cache = new NullifierCache()
   cache.initialize(db)
-  t.is(cache.size, 5)
+  assert.equal(cache.size, 5)
 
   deleteNullifiersFromBlock(db, 103n)
   cache.handleReorg(db)
 
-  t.is(cache.size, 3)
-  t.is(cache.lastBlock, 102n)
+  assert.equal(cache.size, 3)
+  assert.equal(cache.lastBlock, 102n)
 })

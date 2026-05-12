@@ -8,8 +8,8 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "pretest": "npm run build",
-    "test": "npm run build && brittle ./test/**/*.test.js",
-    "test:only": "npm run build && brittle --solo ./test/**/*.test.js",
+    "test": "npm run build && node --test --enable-source-maps test/*.test.js test/**/*.test.js",
+    "test:only": "npm run build && node --test-only --enable-source-maps test/*.test.js test/**/*.test.js",
     "prepack": "npm run build",
     "prepare": "tsc --build"
   },
@@ -31,7 +31,6 @@
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "devDependencies": {
-    "@types/brittle": "^3.5.0",
     "eslint": "^9.24.0",
     "typescript": "^5.8.3"
   },
@@ -42,7 +41,6 @@
     "@railgun-reloaded/storage": "https://github.com/railgun-reloaded/storage#dev",
     "@railgun-reloaded/tsconfig": "https://github.com/railgun-reloaded/tsconfig#main",
     "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node#main",
-    "@types/node": "^24.0.11",
-    "brittle": "^3.19.1"
+    "@types/node": "^24.0.11"
   }
 }

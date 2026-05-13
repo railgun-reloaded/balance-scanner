@@ -83,22 +83,34 @@ class NullifierCache {
     }
   }
 
-  /** The set of 0x-prefixed hex nullifier strings. */
+  /**
+   * The set of 0x-prefixed hex nullifier strings.
+   * @returns The underlying set of cached nullifiers.
+   */
   get nullifiers (): Set<string> {
     return this.#set
   }
 
-  /** Number of nullifiers in the cache. */
+  /**
+   * Number of nullifiers in the cache.
+   * @returns The cache size.
+   */
   get size (): number {
     return this.#set.size
   }
 
-  /** Highest block number loaded into the cache, or -1n if empty. */
+  /**
+   * Highest block number loaded into the cache, or -1n if empty.
+   * @returns The last block number ingested into the cache.
+   */
   get lastBlock (): bigint {
     return this.#lastBlockLoaded
   }
 
-  /** Whether the cache has been initialized at least once. */
+  /**
+   * Whether the cache has been initialized at least once.
+   * @returns True once the cache has been populated from storage.
+   */
   get isInitialized (): boolean {
     return this.#initialized
   }

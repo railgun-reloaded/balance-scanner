@@ -13,13 +13,21 @@ import { hasCiphertext } from './utils'
  * In-memory indexer for mapping commitment hashes to ciphertexts from CommitmentBatch events.
  */
 class CiphertextIndexer {
+  /** Primary index: primary key → indexed ciphertext record. */
   #index: Map<CiphertextIndexKey, IndexedCiphertextRecord> = new Map()
+  /** Secondary indexes: field name → (value → set of primary keys). */
   #secondaryIndexes: Map<string, Map<string, Set<CiphertextIndexKey>>> = new Map()
+  /** Primary-key strategy: either a record field name or a function deriving the key from a record. */
   private primaryFieldOrFn: PrimaryIndexOption
+  /** Record fields to maintain secondary indexes on. */
   private secondaryFields: string[]
+  /** Source of CommitmentBatch events — either an in-memory array or an async iterable. */
   private dataProvider: AsyncIterable<CommitmentEvent> | CommitmentEvent[]
+  /** Optional lower bound on event block number; events below this are skipped. */
   private fromBlock: number | undefined
+  /** Optional upper bound on event block number; events above this are skipped. */
   private toBlock: number | undefined
+  /** Optional decode function applied by {@link getDecoded} to convert a record into a higher-level value. */
   private decodeFn?: (record: IndexedCiphertextRecord, viewingKey: string) => unknown
 
   /**
@@ -43,6 +51,11 @@ class CiphertextIndexer {
     if (options.decodeFn) this.decodeFn = options.decodeFn
   }
 
+  /**
+   * Resolve the active index config, falling back to a `commitmentHash` primary with no secondaries.
+   * @param options - Indexer options supplied by the caller.
+   * @returns The effective {@link IndexConfig}.
+   */
   getIndexConfig (options: CiphertextIndexerOptions): IndexConfig {
     return options.indexConfig || {
       primary: 'commitmentHash',
@@ -50,6 +63,10 @@ class CiphertextIndexer {
     }
   }
 
+  /**
+   * Consume every event from the configured data provider and populate the indexes.
+   * @returns A promise that resolves once all events have been ingested.
+   */
   async initialize (): Promise<void> {
     if (Symbol.asyncIterator in this.dataProvider) {
       for await (const event of this.dataProvider as AsyncIterable<CommitmentEvent>) {
@@ -62,6 +79,12 @@ class CiphertextIndexer {
     }
   }
 
+  /**
+   * Parse a single CommitmentEvent and add the resulting record to the primary and secondary indexes.
+   * Events outside the fromBlock/toBlock window, events without ciphertext, and events with unknown
+   * commitment types are skipped. Duplicate primary keys are logged and ignored.
+   * @param event - The CommitmentBatch event to index.
+   */
   addFromEvent (event: CommitmentEvent): void {
     if (
       (this.fromBlock !== undefined && event.blockNumber < this.fromBlock) ||
@@ -124,10 +147,20 @@ class CiphertextIndexer {
     }
   }
 
+  /**
+   * Register a decode function used by {@link getDecoded} to transform stored records into a caller-defined value.
+   * @param decodeFn - Function invoked with the indexed record and a viewing key.
+   */
   setDecodeFunction (decodeFn: (record: IndexedCiphertextRecord, viewingKey: string) => unknown): void {
     this.decodeFn = decodeFn
   }
 
+  /**
+   * Look up a record by primary key and run the configured decode function against it.
+   * @param indexKey - Primary key of the record to decode.
+   * @param viewingKey - Viewing key forwarded to the decode function.
+   * @returns The decoded value, or `undefined` if no record is indexed under `indexKey`.
+   */
   getDecoded (indexKey: CiphertextIndexKey, viewingKey: string): unknown {
     if (!this.decodeFn) throw new Error('No decode function set')
     const record = this.get(indexKey)
@@ -135,18 +168,38 @@ class CiphertextIndexer {
     return this.decodeFn(record, viewingKey)
   }
 
+  /**
+   * Fetch a record by primary key.
+   * @param primaryKey - The primary key to look up.
+   * @returns The indexed record, or `undefined` if no such record exists.
+   */
   get (primaryKey: CiphertextIndexKey): IndexedCiphertextRecord | undefined {
     return this.#index.get(primaryKey)
   }
 
+  /**
+   * Total number of records currently indexed.
+   * @returns The primary-index size.
+   */
   getCount (): number {
     return this.#index.size
   }
 
+  /**
+   * Test whether a primary key is present in the index.
+   * @param primaryKey - The primary key to test.
+   * @returns True if a record with this primary key has been indexed.
+   */
   exists (primaryKey: CiphertextIndexKey): boolean {
     return this.#index.has(primaryKey)
   }
 
+  /**
+   * Look up records via a secondary index.
+   * @param field - The secondary index field name (must have been registered at construction).
+   * @param value - The value to match in that field.
+   * @returns All records whose `field` value equals `value`, or an empty array if none match.
+   */
   getBy (field: string, value: string): IndexedCiphertextRecord[] {
     const idx = this.#secondaryIndexes.get(field)
 

@@ -19,9 +19,9 @@ type TokenBalance = {
  * @param notes - All decrypted notes owned by the wallet
  * @param spentNullifiers - Set of nullifier hashes that have been spent
  * @returns Array of token balances, one per unique token address
- * @TODO Add support for ERC721 (tokenType = 1) when NFT features are implemented.
+ * @todo Add support for ERC721 (tokenType = 1) when NFT features are implemented.
  *       For ERC721, balance computation may need different semantics (count vs sum).
- * @TODO ERC1155 (tokenType = 2) is not yet supported in RAILGUN contracts.
+ * @todo ERC1155 (tokenType = 2) is not yet supported in RAILGUN contracts.
  * @example
  * ```typescript
  * const notes = [

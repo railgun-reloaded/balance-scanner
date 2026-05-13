@@ -13,6 +13,13 @@ hook('setup cryptography libs', async (t) => {
 })
 
 const mockTokenDataGetter: TokenDataGetter = {
+  /**
+   * Mock token-data lookup that derives a deterministic ERC-20 record from the hash.
+   * @param _txidVersion - Unused; satisfies the TokenDataGetter signature.
+   * @param _chain - Unused; satisfies the TokenDataGetter signature.
+   * @param tokenHash - 0x-prefixed or bare hex string identifying the token.
+   * @returns A TokenData stub with tokenType ERC20 and a deterministic address.
+   */
   async getTokenDataFromHash (_txidVersion, _chain, tokenHash) {
     const cleanHash = tokenHash.startsWith('0x') ? tokenHash.slice(2) : tokenHash
     return {

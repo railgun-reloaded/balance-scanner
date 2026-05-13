@@ -108,10 +108,9 @@ function buildReceivedNote (
  * @param senderData.encodedMPK - Encoded master public key
  * @param leafIndex - Merkle tree leaf index
  * @param commitmentType - The commitment type string
- * @param recipientMPK - Decoded recipient master public key
+ * @param recipientMPKHex - Recipient master public key as 0x-prefixed hex
  * @param annotationData - Decrypted annotation data
  * @param treeNumber - Merkle tree number
- * @param recipientMPKHex
  * @returns A DecryptedSentNote ready for the caller to persist
  */
 function buildSentNote (
@@ -201,10 +200,8 @@ async function tryDecryptTransactCommitment (
 /**
  * Attempts decryption of a legacy EncryptedCommitment as both receiver and sender.
  * Uses legacy ECDH (no SHA-256 hash on the shared key) and ephemeralKeys.
- * @param commitment - The legacy encrypted commitment to decrypt
- * @param ctx - Wallet keys and block context
- * @param _commitment
- * @param _ctx
+ * @param _commitment - The legacy encrypted commitment to decrypt (unused; legacy path not implemented)
+ * @param _ctx - Wallet keys and block context (unused; legacy path not implemented)
  * @returns A DecryptResult with receivedNote and/or sentNote
  */
 async function tryDecryptLegacyEncryptedCommitment (

@@ -69,6 +69,11 @@ test('CiphertextIndexer: async iterable ingestion', async (t) => {
 })
 
 test('CiphertextIndexer: composite primary key', async (t) => {
+  /**
+   * Composite primary key combining treeNumber and treePosition.
+   * @param record - The indexed ciphertext record.
+   * @returns A unique string key for the record.
+   */
   const primaryKeyFn = (record: IndexedCiphertextRecord) => {
     return `${record.treeNumber}-${record.treePosition}`
   }

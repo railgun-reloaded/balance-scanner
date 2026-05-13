@@ -20,7 +20,10 @@ function randomBytes (size: number): Uint8Array {
   return Uint8Array.from(crypto.randomBytes(size))
 }
 
-/** Create an in-memory chain database for testing. */
+/**
+ * Create an in-memory chain database for testing.
+ * @returns A fresh ChainDB backed by a `:memory:` SQLite instance.
+ */
 function createTestDb (): ChainDB {
   return createChainDB({
     path: ':memory:',

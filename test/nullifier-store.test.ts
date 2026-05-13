@@ -149,6 +149,8 @@ function makeNote (nullifier: Uint8Array, token: string, amount: bigint): Decryp
     nullifier: bytesToHex(nullifier, { prefix: true }),
     token,
     amount,
+    tokenType: 0,
+    tokenSubID: `0x${'00'.repeat(32)}`,
     blockNumber: 100n,
     treeId: 0,
     leafIndex: 0n,

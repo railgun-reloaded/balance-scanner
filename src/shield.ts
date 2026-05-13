@@ -47,6 +47,8 @@ export async function processShieldAction (
     nullifier: bytesToHex(nullifier, { prefix: true }),
     token: bytesToHex(shieldNote.tokenData.tokenAddress, { prefix: true }),
     amount: shieldNote.value,
+    tokenType: shieldNote.tokenData.tokenType,
+    tokenSubID: bytesToHex(shieldNote.tokenData.tokenSubID, { prefix: true }),
     blockNumber: ctx.blockNumber,
     treeId: commitment.treeNumber,
     leafIndex,

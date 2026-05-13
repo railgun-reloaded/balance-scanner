@@ -65,6 +65,8 @@ function decodeRecipientMPK (
  * @param receiverData - Decrypted receiver data
  * @param receiverData.tokenData - Token information
  * @param receiverData.tokenData.tokenAddress - Token contract address
+ * @param receiverData.tokenData.tokenType - Token-class enum (0 = ERC20, 1 = ERC721, 2 = ERC1155)
+ * @param receiverData.tokenData.tokenSubID - 32-byte sub-identifier (zero for ERC20)
  * @param receiverData.value - Note value
  * @param leafIndex - Merkle tree leaf index
  * @param commitmentType - The commitment type string
@@ -75,7 +77,14 @@ function decodeRecipientMPK (
 function buildReceivedNote (
   hash: Uint8Array,
   ctx: TransactContext,
-  receiverData: { tokenData: { tokenAddress: Uint8Array }, value: bigint },
+  receiverData: {
+    tokenData: {
+      tokenType: number
+      tokenAddress: Uint8Array
+      tokenSubID: Uint8Array
+    }
+    value: bigint
+  },
   leafIndex: bigint,
   commitmentType: string,
   annotationData: NoteAnnotationData | null,
@@ -89,6 +98,8 @@ function buildReceivedNote (
     nullifier: bytesToHex(nullifier, { prefix: true }),
     token: bytesToHex(receiverData.tokenData.tokenAddress, { prefix: true }),
     amount: receiverData.value,
+    tokenType: receiverData.tokenData.tokenType,
+    tokenSubID: bytesToHex(receiverData.tokenData.tokenSubID, { prefix: true }),
     blockNumber: ctx.blockNumber,
     treeId: treeNumber,
     leafIndex,

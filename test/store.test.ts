@@ -42,6 +42,8 @@ function makeNote (overrides: Partial<DecryptedNote> = {}): DecryptedNote {
     nullifier: bytesToHex(randomBytes(32), { prefix: true }),
     token: '0x0000000000000000000000000000000000000000',
     amount: 1000n,
+    tokenType: 0,
+    tokenSubID: `0x${'00'.repeat(32)}`,
     blockNumber: 100n,
     treeId: 0,
     leafIndex: 0n,
@@ -106,4 +108,26 @@ test('toNoteInput lowercases the token address regardless of input case', () => 
   assert.equal(toNoteInput(makeNote({ token: checksumAddress })).token, checksumAddress.toLowerCase())
   assert.equal(toNoteInput(makeNote({ token: checksumAddress.toUpperCase() })).token, checksumAddress.toLowerCase())
   assert.equal(toNoteInput(makeNote({ token: checksumAddress.toLowerCase() })).token, checksumAddress.toLowerCase())
+})
+
+test('toNoteInput forwards tokenType and tokenSubID unchanged', () => {
+  const subIdHex = `0x${'ab'.repeat(32)}`
+  const input = toNoteInput(makeNote({ tokenType: 1, tokenSubID: subIdHex }))
+
+  assert.equal(input.tokenType, 1)
+  assert.equal(input.tokenSubID, subIdHex)
+})
+
+test('storeDecryptedNotes persists ERC721 tokenType and tokenSubID end-to-end', () => {
+  const db = createTestWalletDb()
+  createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+
+  const subIdHex = `0x${'ab'.repeat(32)}`
+  storeDecryptedNotes(db, [makeNote({ tokenType: 1, tokenSubID: subIdHex })])
+
+  const stored = getAllNotes(db, 'test-wallet')
+  assert.equal(stored.length, 1)
+  assert.equal(stored[0]!.tokenType, 1)
+  assert.equal(stored[0]!.tokenSubID.length, 32)
+  assert.ok(stored[0]!.tokenSubID.every((byte) => byte === 0xab))
 })

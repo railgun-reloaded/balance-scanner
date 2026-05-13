@@ -27,6 +27,8 @@ function toNoteInput (note: DecryptedNote): NoteInput {
     nullifier: note.nullifier,
     token: normalizeToken(note.token),
     amount: note.amount,
+    tokenType: note.tokenType,
+    tokenSubID: note.tokenSubID,
     blockNumber: note.blockNumber,
     treeNumber: note.treeId,
     treePosition: Number(note.leafIndex),

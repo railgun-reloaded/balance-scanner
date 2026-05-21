@@ -1,7 +1,6 @@
 /**
  * A note successfully decrypted by the wallet as receiver or from a shield.
- * `tokenType` is the integer token-class enum (0 = ERC20, 1 = ERC721,
- * 2 = ERC1155). `tokenSubID` is a 32-byte sub-identifier exposed as
+ * `tokenType` is the integer token-class enum (0 = ERC20, 1 = ERC721). `tokenSubID` is a 32-byte sub-identifier exposed as
  * 0x-prefixed lowercase hex; for ERC20 it is the canonical 256-bit null.
  */
 type DecryptedNote = {

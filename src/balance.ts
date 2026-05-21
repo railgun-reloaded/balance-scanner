@@ -21,7 +21,6 @@ type TokenBalance = {
  * @returns Array of token balances, one per unique token address
  * @todo Add support for ERC721 (tokenType = 1) when NFT features are implemented.
  *       For ERC721, balance computation may need different semantics (count vs sum).
- * @todo ERC1155 (tokenType = 2) is not yet supported in RAILGUN contracts.
  * @example
  * ```typescript
  * const notes = [

@@ -28,7 +28,6 @@ function randomBytes (size: number): Uint8Array {
 function createTestDb (): ChainDB {
   return createChainDB({
     path: ':memory:',
-    enableWAL: false,
     runMigrations: true
   })
 }

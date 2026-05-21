@@ -27,7 +27,7 @@ function randomBytes (size: number): Uint8Array {
  * @returns WalletDB instance with schema applied.
  */
 function createTestWalletDb (): WalletDB {
-  return createWalletDB({ path: ':memory:', enableWAL: false, runMigrations: true })
+  return createWalletDB({ path: ':memory:', runMigrations: true })
 }
 
 /**

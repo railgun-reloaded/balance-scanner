@@ -16,6 +16,11 @@ type DecryptedNote = {
   leafIndex: bigint
   commitmentType: string
   outputType: number | null
+  npk?: string
+  random?: string
+  chainId?: number
+  creationTxid?: Uint8Array
+  creationRailgunTxid?: Uint8Array
 }
 
 /**

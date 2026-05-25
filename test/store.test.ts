@@ -62,7 +62,7 @@ test('storeDecryptedNotes persists notes to wallet DB', () => {
 
   assert.equal(count, 2, 'returns number of rows inserted')
 
-  const stored = getAllNotes(db, 'test-wallet')
+  const stored = getAllNotes(db, 'test-wallet', 0)
   assert.equal(stored.length, 2, 'two notes persisted in DB')
 })
 
@@ -85,7 +85,7 @@ test('storeDecryptedNotes handles duplicate notes idempotently', () => {
 
   assert.equal(secondCount, 0, 'second insert of duplicate returns 0')
 
-  const stored = getAllNotes(db, 'test-wallet')
+  const stored = getAllNotes(db, 'test-wallet', 0)
   assert.equal(stored.length, 1, 'only one note in DB after duplicate insert')
 })
 
@@ -96,7 +96,7 @@ test('storeDecryptedNotes correctly maps treeId to treeNumber and leafIndex to t
   const note = makeNote({ treeId: 3, leafIndex: 42n })
   storeDecryptedNotes(db, [note])
 
-  const stored = getAllNotes(db, 'test-wallet')
+  const stored = getAllNotes(db, 'test-wallet', 0)
   assert.equal(stored.length, 1, 'one note stored')
   assert.equal(stored[0]!.treeNumber, 3, 'treeId mapped to treeNumber')
   assert.equal(stored[0]!.treePosition, 42, 'leafIndex mapped to treePosition')

@@ -4,6 +4,7 @@ import type { Chain, NoteAnnotationData, TokenDataGetter } from '@railgun-reload
 import {
   MEMO_SENDER_RANDOM_NULL,
   Memo,
+  Note,
   TXIDVersion,
   decryptCommitmentAsReceiverOrSender,
 } from '@railgun-reloaded/wallet-node'
@@ -77,20 +78,17 @@ function decodeRecipientMPK (
 function buildReceivedNote (
   hash: Uint8Array,
   ctx: TransactContext,
-  receiverData: {
-    tokenData: {
-      tokenType: number
-      tokenAddress: Uint8Array
-      tokenSubID: Uint8Array
-    }
-    value: bigint
-  },
+  receiverData: { random: string, tokenData: { tokenAddress: Uint8Array }, value: bigint },
   leafIndex: bigint,
   commitmentType: string,
   annotationData: NoteAnnotationData | null,
   treeNumber: number
 ): DecryptedNote {
   const nullifier = computeNullifier(ctx.nullifyingKey, leafIndex)
+  const npk = Note.computeNotePublicKey(
+    ctx.masterPublicKey,
+    hexToBytes(receiverData.random)
+  )
 
   return {
     commitment: bytesToHex(hash, { prefix: true }),
@@ -105,6 +103,8 @@ function buildReceivedNote (
     leafIndex,
     commitmentType,
     outputType: annotationData?.outputType ?? null,
+    npk: bytesToHex(npk, { prefix: true }),
+    random: receiverData.random,
   }
 }
 
@@ -171,6 +171,7 @@ async function tryDecryptTransactCommitment (
     commitment.blindedReceiverViewingKey,
     commitment.blindedSenderViewingKey,
     ctx.viewingPrivateKey,
+    commitment.memo,
     ctx.tokenDataGetter
   )
 
@@ -219,8 +220,10 @@ async function tryDecryptLegacyEncryptedCommitment (
   _commitment: EncryptedCommitment,
   _ctx: TransactContext
 ): Promise<DecryptResult> {
-  // TODO: Legacy V1 encrypted commitments are not yet supported in reloaded wallet-node.
+  // TODO(v1-legacy): Legacy V1 encrypted commitments are not yet supported in reloaded wallet-node.
   // The decryption logic for ephemeralKeys-based ECDH needs to be implemented.
+  // When implemented, align memo handling with V2 (flattened Uint8Array; empty → no append)
+  // and emit a sentNote alongside the receivedNote for self-sends.
   // For now, return empty results.
   return { receivedNote: null, sentNote: null }
 }

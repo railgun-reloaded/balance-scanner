@@ -1,3 +1,4 @@
+import { hexToBytes } from '@railgun-reloaded/bytes'
 import type { NoteInput, WalletDB } from '@railgun-reloaded/storage'
 import { insertNotesBatch, toDBNotes } from '@railgun-reloaded/storage'
 
@@ -20,10 +21,21 @@ function normalizeToken (token: string): string {
  * @param note - The decrypted note to convert.
  * @returns A NoteInput object ready for storage.
  */
+const COMMITMENT_TYPE_BY_LABEL: Record<string, number> = {
+  GeneratedCommitment: 0,
+  ShieldCommitment: 0,
+  TransactCommitment: 1,
+}
+
+function commitmentTypeToNumber (label: string): number {
+  return COMMITMENT_TYPE_BY_LABEL[label] ?? 1
+}
+
 function toNoteInput (note: DecryptedNote): NoteInput {
   return {
     commitment: note.commitment,
     walletId: note.walletId,
+    chainId: note.chainId ?? 0,
     nullifier: note.nullifier,
     token: normalizeToken(note.token),
     amount: note.amount,
@@ -32,6 +44,12 @@ function toNoteInput (note: DecryptedNote): NoteInput {
     blockNumber: note.blockNumber,
     treeNumber: note.treeId,
     treePosition: Number(note.leafIndex),
+    commitmentType: commitmentTypeToNumber(note.commitmentType),
+    ...(note.outputType !== null && { outputType: note.outputType }),
+    ...(note.npk !== undefined && { npk: hexToBytes(note.npk) }),
+    ...(note.random !== undefined && { random: hexToBytes(note.random) }),
+    ...(note.creationTxid !== undefined && { creationTxid: note.creationTxid }),
+    ...(note.creationRailgunTxid !== undefined && { creationRailgunTxid: note.creationRailgunTxid }),
   }
 }
 

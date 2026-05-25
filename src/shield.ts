@@ -54,6 +54,8 @@ export async function processShieldAction (
     leafIndex,
     commitmentType,
     outputType: null,
+    npk: shieldNote.notePublicKey,
+    random: shieldNote.random,
   }]
 }
 

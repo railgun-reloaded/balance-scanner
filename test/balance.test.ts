@@ -13,6 +13,7 @@ import type { DecryptedNote } from '../src/types'
 const createNote = (overrides: Partial<DecryptedNote>): DecryptedNote => ({
   commitment: '0x0000000000000000000000000000000000000000000000000000000000000000',
   walletId: 'test-wallet',
+  chainId: 1,
   nullifier: '0x1111111111111111111111111111111111111111111111111111111111111111',
   token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   amount: 1000n,

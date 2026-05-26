@@ -145,6 +145,7 @@ function makeNote (nullifier: Uint8Array, token: string, amount: bigint): Decryp
   return {
     commitment: bytesToHex(randomBytes(32), { prefix: true }),
     walletId: 'test-wallet',
+    chainId: 1,
     nullifier: bytesToHex(nullifier, { prefix: true }),
     token,
     amount,

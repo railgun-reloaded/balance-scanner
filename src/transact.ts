@@ -1,6 +1,6 @@
 import { bytesToHex, hexToBytes } from '@railgun-reloaded/bytes'
 import type { EncryptedCommitment, Transact, TransactCommitment } from '@railgun-reloaded/scanner'
-import type { Chain, NoteAnnotationData, TokenDataGetter } from '@railgun-reloaded/wallet-node'
+import type { Chain, DecryptedCommitmentData, NoteAnnotationData, TokenDataGetter } from '@railgun-reloaded/wallet-node'
 import {
   MEMO_SENDER_RANDOM_NULL,
   Memo,
@@ -78,7 +78,7 @@ function decodeRecipientMPK (
 function buildReceivedNote (
   hash: Uint8Array,
   ctx: TransactContext,
-  receiverData: { random: string, tokenData: { tokenAddress: Uint8Array }, value: bigint },
+  receiverData: DecryptedCommitmentData,
   leafIndex: bigint,
   commitmentType: string,
   annotationData: NoteAnnotationData | null,
@@ -93,6 +93,7 @@ function buildReceivedNote (
   return {
     commitment: bytesToHex(hash, { prefix: true }),
     walletId: ctx.walletId,
+    chainId: ctx.chain.id,
     nullifier: bytesToHex(nullifier, { prefix: true }),
     token: bytesToHex(receiverData.tokenData.tokenAddress, { prefix: true }),
     amount: receiverData.value,
@@ -127,7 +128,7 @@ function buildReceivedNote (
 function buildSentNote (
   hash: Uint8Array,
   ctx: TransactContext,
-  senderData: { tokenData: { tokenAddress: Uint8Array }, value: bigint, encodedMPK: string },
+  senderData: DecryptedCommitmentData,
   leafIndex: bigint,
   commitmentType: string,
   recipientMPKHex: string,
@@ -138,6 +139,7 @@ function buildSentNote (
     commitment: bytesToHex(hash, { prefix: true }),
     walletId: ctx.walletId,
     txid: ctx.txid,
+    chainId: ctx.chain.id,
     token: bytesToHex(senderData.tokenData.tokenAddress, { prefix: true }),
     amount: senderData.value,
     outputType: annotationData?.outputType ?? null,

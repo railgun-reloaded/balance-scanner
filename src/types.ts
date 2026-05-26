@@ -18,7 +18,7 @@ type DecryptedNote = {
   outputType: number | null
   npk?: string
   random?: string
-  chainId?: number
+  chainId: number
   creationTxid?: Uint8Array
   creationRailgunTxid?: Uint8Array
 }
@@ -39,6 +39,7 @@ type DecryptedSentNote = {
   blockNumber: bigint
   treeId: number
   leafIndex: bigint
+  chainId: number
 }
 
 /**

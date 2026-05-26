@@ -27,15 +27,25 @@ const COMMITMENT_TYPE_BY_LABEL: Record<string, number> = {
   TransactCommitment: 1,
 }
 
+/**
+ * Convert a storage commitment label into the numeric value expected by storage.
+ * @param label - Commitment label emitted by the scanner/decryption path.
+ * @returns Numeric storage commitment type.
+ */
 function commitmentTypeToNumber (label: string): number {
   return COMMITMENT_TYPE_BY_LABEL[label] ?? 1
 }
 
+/**
+ * Convert a decrypted note into the storage-layer note input contract.
+ * @param note - Decrypted note to persist.
+ * @returns NoteInput ready for storage conversion.
+ */
 function toNoteInput (note: DecryptedNote): NoteInput {
   return {
     commitment: note.commitment,
     walletId: note.walletId,
-    chainId: note.chainId ?? 0,
+    chainId: note.chainId,
     nullifier: note.nullifier,
     token: normalizeToken(note.token),
     amount: note.amount,

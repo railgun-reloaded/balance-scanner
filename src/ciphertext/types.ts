@@ -7,13 +7,13 @@ enum CommitmentType {
   ShieldCommitmentV3 = 'ShieldCommitmentV3',
 }
 
-interface CiphertextData {
+type CiphertextData = {
   iv: string;
   tag: string;
   data: string[];
 }
 
-interface CommitmentCiphertext {
+type CommitmentCiphertext = {
   ciphertext: CiphertextData;
   blindedSenderViewingKey: string,
   blindedReceiverViewingKey: string,
@@ -21,7 +21,7 @@ interface CommitmentCiphertext {
   memo: string
 }
 
-interface BaseCommitmentArgs {
+type BaseCommitmentArgs = {
   id: string;
   treeNumber: number;
   batchStartTreePosition: number;
@@ -33,33 +33,33 @@ interface BaseCommitmentArgs {
   hash: string;
   name: CommitmentType;
   startPosition: string | number;
-};
+}
 
-interface TokenData {
+type TokenData = {
   id: string;
   tokenType: string;
   tokenSubID?: string;
   tokenAddress: string;
 }
 
-interface ShieldCommitmentPreImage {
+type ShieldCommitmentPreImage = {
   npk: string;
   value: string;
   token: TokenData
 }
 
-interface ShieldCommitmentArgs extends BaseCommitmentArgs {
+type ShieldCommitmentArgs = {
   encryptedBundle: string[];
   preimage: ShieldCommitmentPreImage
-}
+} & BaseCommitmentArgs
 
-interface TransactCommitmentArgs extends BaseCommitmentArgs {
+type TransactCommitmentArgs = {
   ciphertext: CommitmentCiphertext;
-}
+} & BaseCommitmentArgs
 
 type CommitmentArgs = TransactCommitmentArgs | ShieldCommitmentArgs
 
-interface CommitmentEvent {
+type CommitmentEvent = {
   name: string;
   blockNumber: number;
   transactionIndex: number;
@@ -104,12 +104,12 @@ type IndexedCiphertextRecord = IndexedTransactCommitmentRecord | IndexedShieldCo
 type CiphertextIndexKey = string
 
 type PrimaryIndexOption = CiphertextIndexKey | ((record: IndexedCiphertextRecord) => string)
-interface IndexConfig {
+type IndexConfig = {
   primary: PrimaryIndexOption
   secondary?: (keyof IndexedCiphertextRecord)[];
 }
 
-interface CiphertextIndexerOptions {
+type CiphertextIndexerOptions = {
   indexConfig?: IndexConfig;
   fromBlock?: number;
   toBlock?: number;

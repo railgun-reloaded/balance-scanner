@@ -1,11 +1,13 @@
 import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { Shield } from '@railgun-reloaded/scanner'
+import type { Chain } from '@railgun-reloaded/wallet-node'
 import { ShieldNote } from '@railgun-reloaded/wallet-node'
 
 import { computeNullifier } from './nullifier'
 import type { DecryptedNote } from './types'
 
 type ShieldContext = {
+  chain: Chain
   walletId: string
   viewingPrivateKey: Uint8Array
   masterPublicKey: Uint8Array
@@ -44,6 +46,7 @@ export async function processShieldAction (
   return [{
     commitment: bytesToHex(commitment.hash, { prefix: true }),
     walletId: ctx.walletId,
+    chainId: ctx.chain.id,
     nullifier: bytesToHex(nullifier, { prefix: true }),
     token: bytesToHex(shieldNote.tokenData.tokenAddress, { prefix: true }),
     amount: shieldNote.value,

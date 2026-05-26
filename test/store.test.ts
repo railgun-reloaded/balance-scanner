@@ -39,6 +39,7 @@ function makeNote (overrides: Partial<DecryptedNote> = {}): DecryptedNote {
   return {
     commitment: bytesToHex(randomBytes(32), { prefix: true }),
     walletId: 'test-wallet',
+    chainId: 1,
     nullifier: bytesToHex(randomBytes(32), { prefix: true }),
     token: '0x0000000000000000000000000000000000000000',
     amount: 1000n,
@@ -62,7 +63,7 @@ test('storeDecryptedNotes persists notes to wallet DB', () => {
 
   assert.equal(count, 2, 'returns number of rows inserted')
 
-  const stored = getAllNotes(db, 'test-wallet', 0)
+  const stored = getAllNotes(db, 'test-wallet', 1)
   assert.equal(stored.length, 2, 'two notes persisted in DB')
 })
 
@@ -85,7 +86,7 @@ test('storeDecryptedNotes handles duplicate notes idempotently', () => {
 
   assert.equal(secondCount, 0, 'second insert of duplicate returns 0')
 
-  const stored = getAllNotes(db, 'test-wallet', 0)
+  const stored = getAllNotes(db, 'test-wallet', 1)
   assert.equal(stored.length, 1, 'only one note in DB after duplicate insert')
 })
 
@@ -96,7 +97,7 @@ test('storeDecryptedNotes correctly maps treeId to treeNumber and leafIndex to t
   const note = makeNote({ treeId: 3, leafIndex: 42n })
   storeDecryptedNotes(db, [note])
 
-  const stored = getAllNotes(db, 'test-wallet', 0)
+  const stored = getAllNotes(db, 'test-wallet', 1)
   assert.equal(stored.length, 1, 'one note stored')
   assert.equal(stored[0]!.treeNumber, 3, 'treeId mapped to treeNumber')
   assert.equal(stored[0]!.treePosition, 42, 'leafIndex mapped to treePosition')
@@ -125,7 +126,7 @@ test('storeDecryptedNotes persists ERC721 tokenType and tokenSubID end-to-end', 
   const subIdHex = `0x${'ab'.repeat(32)}`
   storeDecryptedNotes(db, [makeNote({ tokenType: 1, tokenSubID: subIdHex })])
 
-  const stored = getAllNotes(db, 'test-wallet')
+  const stored = getAllNotes(db, 'test-wallet', 1)
   assert.equal(stored.length, 1)
   assert.equal(stored[0]!.tokenType, 1)
   assert.equal(stored[0]!.tokenSubID.length, 32)

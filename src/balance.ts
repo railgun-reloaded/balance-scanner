@@ -127,4 +127,4 @@ function getBalances (
 }
 
 export type { TokenBalance }
-export { aggregateBalances, getBalances, getTokenBalance, getTokenBalances }
+export { getBalances, getTokenBalance, getTokenBalances }

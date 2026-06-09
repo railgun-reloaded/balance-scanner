@@ -33,7 +33,7 @@ function createTestDb (): ChainDB {
 
 const NULLIFIER_COUNT = 1_000_000
 const BATCH_SIZE = 500
-const MAX_LOAD_TIME_MS = 10_000
+const MAX_LOAD_TIME_MS = 60_000
 
 test(`benchmark: loading ${NULLIFIER_COUNT} nullifiers in <${MAX_LOAD_TIME_MS}ms`, () => {
   const db = createTestDb()

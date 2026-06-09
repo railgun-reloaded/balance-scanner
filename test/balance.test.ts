@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { aggregateBalances, getBalances, getTokenBalance, getTokenBalances } from '../src/balance'
+import { getBalances, getTokenBalance, getTokenBalances } from '../src/balance'
 import type { DecryptedNote } from '../src/types'
 import { TokenType } from '../src/types'
 
@@ -50,7 +50,7 @@ const createNFTNote = (
 })
 
 test('empty notes array returns empty array', () => {
-  const result = aggregateBalances([], new Set())
+  const result = getTokenBalances([], new Set())
 
   assert.ok(Array.isArray(result), 'returns array')
   assert.equal(result.length, 0, 'empty result')
@@ -63,7 +63,7 @@ test('single token all unspent', () => {
     createNote({ nullifier: '0x03', amount: 300n }),
   ]
 
-  const result = aggregateBalances(notes, new Set())
+  const result = getTokenBalances(notes, new Set())
 
   assert.equal(result.length, 1, 'one token balance')
   const balance = result[0]
@@ -84,7 +84,7 @@ test('single token some spent', () => {
   ]
 
   const spentNullifiers = new Set(['0x02', '0x04'])
-  const result = aggregateBalances(notes, spentNullifiers)
+  const result = getTokenBalances(notes, spentNullifiers)
 
   assert.equal(result.length, 1, 'one token balance')
   const balance = result[0]
@@ -110,7 +110,7 @@ test('multiple tokens mixed', () => {
   ]
 
   const spentNullifiers = new Set(['0x02'])
-  const result = aggregateBalances(notes, spentNullifiers)
+  const result = getTokenBalances(notes, spentNullifiers)
 
   assert.equal(result.length, 3, 'three token balances')
 
@@ -145,7 +145,7 @@ test('all notes spent returns empty', () => {
   ]
 
   const spentNullifiers = new Set(['0x01', '0x02', '0x03'])
-  const result = aggregateBalances(notes, spentNullifiers)
+  const result = getTokenBalances(notes, spentNullifiers)
 
   assert.ok(Array.isArray(result), 'returns array')
   assert.equal(result.length, 0, 'empty result when all spent')
@@ -159,7 +159,7 @@ test('zero-value notes handled correctly', () => {
     createNote({ nullifier: '0x04', amount: 200n }),
   ]
 
-  const result = aggregateBalances(notes, new Set())
+  const result = getTokenBalances(notes, new Set())
 
   assert.equal(result.length, 1, 'one token balance')
   if (result[0]) {
@@ -175,7 +175,7 @@ test('zero-value notes with some spent', () => {
   ]
 
   const spentNullifiers = new Set(['0x02'])
-  const result = aggregateBalances(notes, spentNullifiers)
+  const result = getTokenBalances(notes, spentNullifiers)
 
   assert.equal(result.length, 1, 'one token balance')
   if (result[0]) {
@@ -245,13 +245,13 @@ test('getBalances: handles spent notes correctly', () => {
   assert.equal(balances.get(usdcAddress), 400n, 'balance excludes spent note')
 })
 
-test('aggregateBalances: ERC721 IDs in the same collection produce distinct entries', () => {
+test('getTokenBalances: ERC721 IDs in the same collection produce distinct entries', () => {
   const notes = [
     createNFTNote(`0x${'00'.repeat(31)}01`, { nullifier: '0x01' }),
     createNFTNote(`0x${'00'.repeat(31)}02`, { nullifier: '0x02' }),
   ]
 
-  const result = aggregateBalances(notes, new Set())
+  const result = getTokenBalances(notes, new Set())
 
   assert.equal(result.length, 2, 'two distinct token identities')
   for (const entry of result) {
@@ -264,14 +264,14 @@ test('aggregateBalances: ERC721 IDs in the same collection produce distinct entr
   assert.deepEqual(subIDs, [`0x${'00'.repeat(31)}01`, `0x${'00'.repeat(31)}02`], 'both token IDs present')
 })
 
-test('aggregateBalances: duplicate notes for one ERC721 identity merge into one entry', () => {
+test('getTokenBalances: duplicate notes for one ERC721 identity merge into one entry', () => {
   const tokenSubID = `0x${'00'.repeat(31)}07`
   const notes = [
     createNFTNote(tokenSubID, { nullifier: '0x01' }),
     createNFTNote(tokenSubID, { nullifier: '0x02' }),
   ]
 
-  const result = aggregateBalances(notes, new Set())
+  const result = getTokenBalances(notes, new Set())
 
   assert.equal(result.length, 1, 'one identity')
   const entry = result[0]
@@ -284,18 +284,18 @@ test('aggregateBalances: duplicate notes for one ERC721 identity merge into one 
   }
 })
 
-test('aggregateBalances: spent ERC721 notes are excluded', () => {
+test('getTokenBalances: spent ERC721 notes are excluded', () => {
   const tokenSubID = `0x${'00'.repeat(31)}03`
   const notes = [
     createNFTNote(tokenSubID, { nullifier: '0x01' }),
   ]
 
-  const result = aggregateBalances(notes, new Set(['0x01']))
+  const result = getTokenBalances(notes, new Set(['0x01']))
 
   assert.equal(result.length, 0, 'spent NFT excluded entirely')
 })
 
-test('aggregateBalances: mixed ERC20 and ERC721 produce correct distinct entries', () => {
+test('getTokenBalances: mixed ERC20 and ERC721 produce correct distinct entries', () => {
   const usdc = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
   const notes = [
     createNote({ token: usdc, nullifier: '0x01', amount: 500n }),
@@ -304,7 +304,7 @@ test('aggregateBalances: mixed ERC20 and ERC721 produce correct distinct entries
     createNFTNote(`0x${'00'.repeat(31)}0b`, { nullifier: '0x04' }),
   ]
 
-  const result = aggregateBalances(notes, new Set())
+  const result = getTokenBalances(notes, new Set())
 
   assert.equal(result.length, 3, 'one ERC20 entry plus two NFT entries')
 
@@ -323,7 +323,7 @@ test('aggregateBalances: mixed ERC20 and ERC721 produce correct distinct entries
   }
 })
 
-test('getTokenBalances: returns one entry per distinct identity (alias for aggregateBalances)', () => {
+test('getTokenBalances: returns one entry per distinct identity', () => {
   const usdc = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
   const notes = [
     createNote({ token: usdc, nullifier: '0x01', amount: 100n }),

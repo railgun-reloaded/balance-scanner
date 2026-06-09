@@ -10,7 +10,7 @@ import {
   getNullifiersByBlockRange,
 } from '@railgun-reloaded/storage'
 
-import { aggregateBalances } from '../src/balance'
+import { getTokenBalances } from '../src/balance'
 import { NullifierCache } from '../src/nullifier-cache'
 import { loadNullifierSet, syncNullifiers } from '../src/nullifier-store'
 import type { DecryptedNote } from '../src/types'
@@ -159,7 +159,7 @@ function makeNote (nullifier: Uint8Array, token: string, amount: bigint): Decryp
   }
 }
 
-test('integration: aggregateBalances excludes spent notes from loaded nullifier set', () => {
+test('integration: getTokenBalances excludes spent notes from loaded nullifier set', () => {
   const db = createTestDb()
 
   const spentNullifierA = randomBytes(32)
@@ -188,7 +188,7 @@ test('integration: aggregateBalances excludes spent notes from loaded nullifier 
     makeNote(randomBytes(32), '0xTokenB', 500n),
   ]
 
-  const balances = aggregateBalances(notes, nullifierSet)
+  const balances = getTokenBalances(notes, nullifierSet)
 
   assert.equal(balances.length, 2)
 

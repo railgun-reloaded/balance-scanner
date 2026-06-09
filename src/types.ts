@@ -1,7 +1,10 @@
+import { TokenType } from '@railgun-reloaded/wallet-node'
+
 /**
  * A note successfully decrypted by the wallet as receiver or from a shield.
- * `tokenType` is the integer token-class enum (0 = ERC20, 1 = ERC721). `tokenSubID` is a 32-byte sub-identifier exposed as
- * 0x-prefixed lowercase hex; for ERC20 it is the canonical 256-bit null.
+ * `tokenType` is the token-class enum (`TokenType.ERC20`, `TokenType.ERC721`).
+ * `tokenSubID` is a 32-byte sub-identifier exposed as 0x-prefixed lowercase
+ * hex; for ERC20 it is the canonical 256-bit null.
  */
 type DecryptedNote = {
   commitment: string
@@ -9,7 +12,7 @@ type DecryptedNote = {
   nullifier: string
   token: string
   amount: bigint
-  tokenType: number
+  tokenType: TokenType
   tokenSubID: string
   blockNumber: bigint
   treeId: number
@@ -52,4 +55,5 @@ type SpentNoteInfo = {
   amount: bigint
 }
 
+export { TokenType }
 export type { DecryptedNote, DecryptedSentNote, SpentNoteInfo }

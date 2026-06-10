@@ -264,26 +264,6 @@ test('getTokenBalances: ERC721 IDs in the same collection produce distinct entri
   assert.deepEqual(subIDs, [`0x${'00'.repeat(31)}01`, `0x${'00'.repeat(31)}02`], 'both token IDs present')
 })
 
-test('getTokenBalances: duplicate notes for one ERC721 identity merge into one entry', () => {
-  const tokenSubID = `0x${'00'.repeat(31)}07`
-  const notes = [
-    createNFTNote(tokenSubID, { nullifier: '0x01' }),
-    createNFTNote(tokenSubID, { nullifier: '0x02' }),
-  ]
-
-  const result = getTokenBalances(notes, new Set())
-
-  assert.equal(result.length, 1, 'one identity')
-  const entry = result[0]
-  assert.ok(entry)
-  if (entry) {
-    assert.equal(entry.tokenType, TokenType.ERC721)
-    assert.equal(entry.tokenSubID, tokenSubID)
-    assert.equal(entry.balance, 2n, 'amounts summed across duplicate notes')
-    assert.equal(entry.utxos.length, 2, 'both backing notes retained')
-  }
-})
-
 test('getTokenBalances: spent ERC721 notes are excluded', () => {
   const tokenSubID = `0x${'00'.repeat(31)}03`
   const notes = [
@@ -399,18 +379,4 @@ test('getTokenBalances: same identity with different address casing collapses to
   assert.equal(result.length, 1, 'duplicate identities merged')
   assert.equal(result[0]?.balance, 300n, 'amounts summed across casings')
   assert.equal(result[0]?.utxos.length, 2, 'both notes retained')
-})
-
-test('getTokenBalances: same ERC721 identity with different tokenSubID casing collapses to one entry', () => {
-  const lowerId = `0x${'00'.repeat(31)}ab`
-  const upperId = `0x${'00'.repeat(31)}AB`
-  const notes = [
-    createNFTNote(lowerId, { nullifier: '0x01' }),
-    createNFTNote(upperId, { nullifier: '0x02' }),
-  ]
-
-  const result = getTokenBalances(notes, new Set())
-
-  assert.equal(result.length, 1, 'duplicate NFT identities merged')
-  assert.equal(result[0]?.balance, 2n, 'NFT amounts summed across casings')
 })

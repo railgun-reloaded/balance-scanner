@@ -19,12 +19,14 @@ type TokenBalance = {
 }
 
 /**
- * Composite identity key for a decrypted note.
+ * Composite identity key for a decrypted note. `token` and `tokenSubID` are
+ * lowercased so notes that share an identity but arrived with different
+ * casing collapse into one balance entry.
  * @param note - Source note.
- * @returns `"${token}:${tokenType}:${tokenSubID}"`.
+ * @returns `"${token}:${tokenType}:${tokenSubID}"` (normalized).
  */
 function tokenIdentityKey (note: DecryptedNote): string {
-  return `${note.token}:${note.tokenType}:${note.tokenSubID}`
+  return `${note.token.toLowerCase()}:${note.tokenType}:${note.tokenSubID.toLowerCase()}`
 }
 
 /**

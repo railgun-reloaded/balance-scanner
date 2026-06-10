@@ -385,3 +385,32 @@ test('getTokenBalance: returns 0n when only ERC721 notes match the address', () 
 
   assert.equal(balance, 0n, 'no ERC20 notes for this address')
 })
+
+test('getTokenBalances: same identity with different address casing collapses to one entry', () => {
+  const lowerAddr = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+  const upperAddr = '0xA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48'
+  const notes = [
+    createNote({ token: lowerAddr, nullifier: '0x01', amount: 100n }),
+    createNote({ token: upperAddr, nullifier: '0x02', amount: 200n }),
+  ]
+
+  const result = getTokenBalances(notes, new Set())
+
+  assert.equal(result.length, 1, 'duplicate identities merged')
+  assert.equal(result[0]?.balance, 300n, 'amounts summed across casings')
+  assert.equal(result[0]?.utxos.length, 2, 'both notes retained')
+})
+
+test('getTokenBalances: same ERC721 identity with different tokenSubID casing collapses to one entry', () => {
+  const lowerId = `0x${'00'.repeat(31)}ab`
+  const upperId = `0x${'00'.repeat(31)}AB`
+  const notes = [
+    createNFTNote(lowerId, { nullifier: '0x01' }),
+    createNFTNote(upperId, { nullifier: '0x02' }),
+  ]
+
+  const result = getTokenBalances(notes, new Set())
+
+  assert.equal(result.length, 1, 'duplicate NFT identities merged')
+  assert.equal(result[0]?.balance, 2n, 'NFT amounts summed across casings')
+})

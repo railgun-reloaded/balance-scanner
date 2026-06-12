@@ -17,13 +17,13 @@ import type { NullifierCache } from './nullifier-cache'
  * @param transactionHash - Transaction hash for the events.
  * @param cache - Optional nullifier cache to update.
  */
-function syncNullifiers (
+async function syncNullifiers (
   chainDb: ChainDB,
   events: Transact[],
   blockNumber: bigint,
   transactionHash: Uint8Array,
   cache?: NullifierCache
-): void {
+): Promise<void> {
   const batch = []
 
   for (const event of events) {
@@ -39,7 +39,7 @@ function syncNullifiers (
 
   if (batch.length === 0) return
 
-  insertNullifiersBatch(chainDb, batch)
+  await insertNullifiersBatch(chainDb, batch)
 
   if (cache) {
     for (const entry of batch) {
@@ -55,20 +55,20 @@ function syncNullifiers (
  * @param cache - Optional NullifierCache for incremental loading.
  * @returns Set of 0x-prefixed hex nullifier strings.
  */
-function loadNullifierSet (
+async function loadNullifierSet (
   chainDb: ChainDB,
   cache?: NullifierCache
-): Set<string> {
+): Promise<Set<string>> {
   if (cache) {
     if (!cache.isInitialized) {
-      cache.initialize(chainDb)
+      await cache.initialize(chainDb)
     } else {
-      cache.update(chainDb)
+      await cache.update(chainDb)
     }
     return cache.nullifiers
   }
 
-  const rows = getAllNullifiers(chainDb)
+  const rows = await getAllNullifiers(chainDb)
   const set = new Set<string>()
   for (const row of rows) {
     set.add(bytesToHex(row.nullifier as Uint8Array, { prefix: true }))

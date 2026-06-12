@@ -28,7 +28,7 @@ function randomBytes (size: number): Uint8Array {
  * Create an in-memory chain database for testing.
  * @returns ChainDB instance.
  */
-function createTestDb (): ChainDB {
+async function createTestDb (): Promise<ChainDB> {
   return createChainDB({
     path: ':memory:',
     runMigrations: true
@@ -56,26 +56,26 @@ function createMockTransact (nullifierCount: number, treeIn: number): Transact {
   } as unknown as Transact
 }
 
-test('syncNullifiers persists nullifiers from Transact events', () => {
-  const db = createTestDb()
+test('syncNullifiers persists nullifiers from Transact events', async () => {
+  const db = await createTestDb()
   const event1 = createMockTransact(3, 0)
   const event2 = createMockTransact(2, 1)
   const txHash = randomBytes(32)
 
-  syncNullifiers(db, [event1, event2], 100n, txHash)
+  await syncNullifiers(db, [event1, event2], 100n, txHash)
 
-  const stored = getNullifiersByBlockRange(db, 100n, 100n)
+  const stored = await getNullifiersByBlockRange(db, 100n, 100n)
   assert.equal(stored.length, 5)
 })
 
-test('syncNullifiers updates cache when provided', () => {
-  const db = createTestDb()
+test('syncNullifiers updates cache when provided', async () => {
+  const db = await createTestDb()
   const event = createMockTransact(3, 0)
   const txHash = randomBytes(32)
   const cache = new NullifierCache()
-  cache.initialize(db)
+  await cache.initialize(db)
 
-  syncNullifiers(db, [event], 100n, txHash, cache)
+  await syncNullifiers(db, [event], 100n, txHash, cache)
 
   assert.equal(cache.size, 3)
   assert.equal(cache.lastBlock, 100n)
@@ -84,23 +84,23 @@ test('syncNullifiers updates cache when provided', () => {
   }
 })
 
-test('syncNullifiers with empty events does nothing', () => {
-  const db = createTestDb()
+test('syncNullifiers with empty events does nothing', async () => {
+  const db = await createTestDb()
   const txHash = randomBytes(32)
 
-  syncNullifiers(db, [], 100n, txHash)
+  await syncNullifiers(db, [], 100n, txHash)
 
-  const stored = getNullifiersByBlockRange(db, 0n, 200n)
+  const stored = await getNullifiersByBlockRange(db, 0n, 200n)
   assert.equal(stored.length, 0)
 })
 
-test('loadNullifierSet without cache does full load', () => {
-  const db = createTestDb()
+test('loadNullifierSet without cache does full load', async () => {
+  const db = await createTestDb()
   const event = createMockTransact(4, 0)
   const txHash = randomBytes(32)
-  syncNullifiers(db, [event], 100n, txHash)
+  await syncNullifiers(db, [event], 100n, txHash)
 
-  const set = loadNullifierSet(db)
+  const set = await loadNullifierSet(db)
 
   assert.equal(set.size, 4)
   for (const n of event.nullifiers) {
@@ -108,27 +108,27 @@ test('loadNullifierSet without cache does full load', () => {
   }
 })
 
-test('loadNullifierSet with uninitialized cache initializes it', () => {
-  const db = createTestDb()
+test('loadNullifierSet with uninitialized cache initializes it', async () => {
+  const db = await createTestDb()
   const event = createMockTransact(3, 0)
-  syncNullifiers(db, [event], 100n, randomBytes(32))
+  await syncNullifiers(db, [event], 100n, randomBytes(32))
   const cache = new NullifierCache()
 
-  const set = loadNullifierSet(db, cache)
+  const set = await loadNullifierSet(db, cache)
 
   assert.equal(set.size, 3)
   assert.ok(cache.isInitialized)
 })
 
-test('loadNullifierSet with initialized cache does incremental update', () => {
-  const db = createTestDb()
-  syncNullifiers(db, [createMockTransact(3, 0)], 100n, randomBytes(32))
+test('loadNullifierSet with initialized cache does incremental update', async () => {
+  const db = await createTestDb()
+  await syncNullifiers(db, [createMockTransact(3, 0)], 100n, randomBytes(32))
   const cache = new NullifierCache()
-  cache.initialize(db)
+  await cache.initialize(db)
   assert.equal(cache.size, 3)
 
-  syncNullifiers(db, [createMockTransact(2, 0)], 200n, randomBytes(32))
-  const set = loadNullifierSet(db, cache)
+  await syncNullifiers(db, [createMockTransact(2, 0)], 200n, randomBytes(32))
+  const set = await loadNullifierSet(db, cache)
 
   assert.equal(set.size, 5)
   assert.equal(cache.lastBlock, 200n)
@@ -159,8 +159,8 @@ function makeNote (nullifier: Uint8Array, token: string, amount: bigint): Decryp
   }
 }
 
-test('integration: getTokenBalances excludes spent notes from loaded nullifier set', () => {
-  const db = createTestDb()
+test('integration: getTokenBalances excludes spent notes from loaded nullifier set', async () => {
+  const db = await createTestDb()
 
   const spentNullifierA = randomBytes(32)
   const spentNullifierB = randomBytes(32)
@@ -178,8 +178,8 @@ test('integration: getTokenBalances excludes spent notes from loaded nullifier s
     hasUnshield: false,
   } as unknown as Transact
 
-  syncNullifiers(db, [event], 100n, randomBytes(32))
-  const nullifierSet = loadNullifierSet(db)
+  await syncNullifiers(db, [event], 100n, randomBytes(32))
+  const nullifierSet = await loadNullifierSet(db)
 
   const notes: DecryptedNote[] = [
     makeNote(spentNullifierA, '0xTokenA', 100n),

@@ -26,7 +26,7 @@ function randomBytes (size: number): Uint8Array {
  * Create an in-memory wallet database for testing.
  * @returns WalletDB instance with schema applied.
  */
-function createTestWalletDb (): WalletDB {
+async function createTestWalletDb (): Promise<WalletDB> {
   return createWalletDB({ path: ':memory:', runMigrations: true })
 }
 
@@ -54,50 +54,50 @@ function makeNote (overrides: Partial<DecryptedNote> = {}): DecryptedNote {
   }
 }
 
-test('storeDecryptedNotes persists notes to wallet DB', () => {
-  const db = createTestWalletDb()
-  createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+test('storeDecryptedNotes persists notes to wallet DB', async () => {
+  const db = await createTestWalletDb()
+  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
   const notes = [makeNote(), makeNote()]
-  const count = storeDecryptedNotes(db, notes)
+  const count = await storeDecryptedNotes(db, notes)
 
   assert.equal(count, 2, 'returns number of rows inserted')
 
-  const stored = getAllNotes(db, 'test-wallet', 1)
+  const stored = await getAllNotes(db, 'test-wallet', 1)
   assert.equal(stored.length, 2, 'two notes persisted in DB')
 })
 
-test('storeDecryptedNotes returns 0 for empty array', () => {
-  const db = createTestWalletDb()
-  createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+test('storeDecryptedNotes returns 0 for empty array', async () => {
+  const db = await createTestWalletDb()
+  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
-  const count = storeDecryptedNotes(db, [])
+  const count = await storeDecryptedNotes(db, [])
 
   assert.equal(count, 0, 'returns 0 when no notes provided')
 })
 
-test('storeDecryptedNotes handles duplicate notes idempotently', () => {
-  const db = createTestWalletDb()
-  createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+test('storeDecryptedNotes handles duplicate notes idempotently', async () => {
+  const db = await createTestWalletDb()
+  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
   const note = makeNote()
-  storeDecryptedNotes(db, [note])
-  const secondCount = storeDecryptedNotes(db, [note])
+  await storeDecryptedNotes(db, [note])
+  const secondCount = await storeDecryptedNotes(db, [note])
 
   assert.equal(secondCount, 0, 'second insert of duplicate returns 0')
 
-  const stored = getAllNotes(db, 'test-wallet', 1)
+  const stored = await getAllNotes(db, 'test-wallet', 1)
   assert.equal(stored.length, 1, 'only one note in DB after duplicate insert')
 })
 
-test('storeDecryptedNotes correctly maps treeId to treeNumber and leafIndex to treePosition', () => {
-  const db = createTestWalletDb()
-  createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+test('storeDecryptedNotes correctly maps treeId to treeNumber and leafIndex to treePosition', async () => {
+  const db = await createTestWalletDb()
+  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
   const note = makeNote({ treeId: 3, leafIndex: 42n })
-  storeDecryptedNotes(db, [note])
+  await storeDecryptedNotes(db, [note])
 
-  const stored = getAllNotes(db, 'test-wallet', 1)
+  const stored = await getAllNotes(db, 'test-wallet', 1)
   assert.equal(stored.length, 1, 'one note stored')
   assert.equal(stored[0]!.treeNumber, 3, 'treeId mapped to treeNumber')
   assert.equal(stored[0]!.treePosition, 42, 'leafIndex mapped to treePosition')
@@ -119,14 +119,14 @@ test('toNoteInput forwards tokenType and tokenSubID unchanged', () => {
   assert.equal(input.tokenSubID, subIdHex)
 })
 
-test('storeDecryptedNotes persists ERC721 tokenType and tokenSubID end-to-end', () => {
-  const db = createTestWalletDb()
-  createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+test('storeDecryptedNotes persists ERC721 tokenType and tokenSubID end-to-end', async () => {
+  const db = await createTestWalletDb()
+  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
   const subIdHex = `0x${'ab'.repeat(32)}`
-  storeDecryptedNotes(db, [makeNote({ tokenType: 1, tokenSubID: subIdHex })])
+  await storeDecryptedNotes(db, [makeNote({ tokenType: 1, tokenSubID: subIdHex })])
 
-  const stored = getAllNotes(db, 'test-wallet', 1)
+  const stored = await getAllNotes(db, 'test-wallet', 1)
   assert.equal(stored.length, 1)
   assert.equal(stored[0]!.tokenType, 1)
   assert.equal(stored[0]!.tokenSubID.length, 32)

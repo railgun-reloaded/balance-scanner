@@ -25,7 +25,7 @@ function randomBytes (size: number): Uint8Array {
  * Create an in-memory chain database for testing.
  * @returns A fresh ChainDB backed by a `:memory:` SQLite instance.
  */
-function createTestDb (): ChainDB {
+async function createTestDb (): Promise<ChainDB> {
   return createChainDB({
     path: ':memory:',
     runMigrations: true
@@ -39,7 +39,7 @@ function createTestDb (): ChainDB {
  * @param startBlock - Starting block number for the nullifiers.
  * @returns Array of hex-encoded nullifier strings.
  */
-function insertTestNullifiers (db: ChainDB, count: number, startBlock: bigint): string[] {
+async function insertTestNullifiers (db: ChainDB, count: number, startBlock: bigint): Promise<string[]> {
   const batch = []
   const hexValues: string[] = []
   for (let i = 0; i < count; i++) {
@@ -52,16 +52,16 @@ function insertTestNullifiers (db: ChainDB, count: number, startBlock: bigint): 
       treeNumber: 0
     })
   }
-  insertNullifiersBatch(db, batch)
+  await insertNullifiersBatch(db, batch)
   return hexValues
 }
 
-test('NullifierCache: initialize loads all nullifiers', () => {
-  const db = createTestDb()
-  const hexValues = insertTestNullifiers(db, 5, 100n)
+test('NullifierCache: initialize loads all nullifiers', async () => {
+  const db = await createTestDb()
+  const hexValues = await insertTestNullifiers(db, 5, 100n)
   const cache = new NullifierCache()
 
-  cache.initialize(db)
+  await cache.initialize(db)
 
   assert.equal(cache.size, 5)
   for (const hex of hexValues) {
@@ -70,25 +70,25 @@ test('NullifierCache: initialize loads all nullifiers', () => {
   assert.equal(cache.lastBlock, 104n)
 })
 
-test('NullifierCache: initialize on empty db', () => {
-  const db = createTestDb()
+test('NullifierCache: initialize on empty db', async () => {
+  const db = await createTestDb()
   const cache = new NullifierCache()
 
-  cache.initialize(db)
+  await cache.initialize(db)
 
   assert.equal(cache.size, 0)
   assert.equal(cache.lastBlock, -1n)
 })
 
-test('NullifierCache: update adds only new nullifiers', () => {
-  const db = createTestDb()
-  const initial = insertTestNullifiers(db, 3, 100n)
+test('NullifierCache: update adds only new nullifiers', async () => {
+  const db = await createTestDb()
+  const initial = await insertTestNullifiers(db, 3, 100n)
   const cache = new NullifierCache()
-  cache.initialize(db)
+  await cache.initialize(db)
   assert.equal(cache.size, 3)
 
-  const added = insertTestNullifiers(db, 4, 200n)
-  const count = cache.update(db)
+  const added = await insertTestNullifiers(db, 4, 200n)
+  const count = await cache.update(db)
 
   assert.equal(count, 4)
   assert.equal(cache.size, 7)
@@ -98,26 +98,26 @@ test('NullifierCache: update adds only new nullifiers', () => {
   }
 })
 
-test('NullifierCache: update with no new nullifiers', () => {
-  const db = createTestDb()
-  insertTestNullifiers(db, 3, 100n)
+test('NullifierCache: update with no new nullifiers', async () => {
+  const db = await createTestDb()
+  await insertTestNullifiers(db, 3, 100n)
   const cache = new NullifierCache()
-  cache.initialize(db)
+  await cache.initialize(db)
 
-  const count = cache.update(db)
+  const count = await cache.update(db)
   assert.equal(count, 0)
   assert.equal(cache.size, 3)
 })
 
-test('NullifierCache: handleReorg clears and reloads', () => {
-  const db = createTestDb()
-  insertTestNullifiers(db, 5, 100n)
+test('NullifierCache: handleReorg clears and reloads', async () => {
+  const db = await createTestDb()
+  await insertTestNullifiers(db, 5, 100n)
   const cache = new NullifierCache()
-  cache.initialize(db)
+  await cache.initialize(db)
   assert.equal(cache.size, 5)
 
-  deleteNullifiersFromBlock(db, 103n)
-  cache.handleReorg(db)
+  await deleteNullifiersFromBlock(db, 103n)
+  await cache.handleReorg(db)
 
   assert.equal(cache.size, 3)
   assert.equal(cache.lastBlock, 102n)

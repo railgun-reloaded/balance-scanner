@@ -70,7 +70,7 @@ function toNoteInput (note: DecryptedNote): NoteInput {
  * @param notes - Array of decrypted notes to persist.
  * @returns Number of rows inserted (duplicates are silently ignored).
  */
-function storeDecryptedNotes (walletDb: WalletDB, notes: DecryptedNote[]): number {
+async function storeDecryptedNotes (walletDb: WalletDB, notes: DecryptedNote[]): Promise<number> {
   if (notes.length === 0) return 0
   const noteInputs = notes.map(toNoteInput)
   const dbNotes = toDBNotes(noteInputs)

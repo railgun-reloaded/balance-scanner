@@ -25,10 +25,10 @@ class NullifierCache {
    * Load all nullifiers from the chain database into the cache.
    * @param chainDb - Chain database instance.
    */
-  initialize (chainDb: ChainDB): void {
+  async initialize (chainDb: ChainDB): Promise<void> {
     this.#set.clear()
     this.#lastBlockLoaded = -1n
-    const rows = getAllNullifiers(chainDb)
+    const rows = await getAllNullifiers(chainDb)
     for (const row of rows) {
       this.#set.add(bytesToHex(row.nullifier as Uint8Array, { prefix: true }))
       if (row.blockNumber > this.#lastBlockLoaded) {
@@ -43,13 +43,13 @@ class NullifierCache {
    * @param chainDb - Chain database instance.
    * @returns Number of new nullifiers added to the cache.
    */
-  update (chainDb: ChainDB): number {
+  async update (chainDb: ChainDB): Promise<number> {
     if (!this.#initialized) {
-      this.initialize(chainDb)
+      await this.initialize(chainDb)
       return this.#set.size
     }
 
-    const rows = getNullifiersFromBlock(chainDb, this.#lastBlockLoaded + 1n)
+    const rows = await getNullifiersFromBlock(chainDb, this.#lastBlockLoaded + 1n)
     for (const row of rows) {
       this.#set.add(bytesToHex(row.nullifier as Uint8Array, { prefix: true }))
       if (row.blockNumber > this.#lastBlockLoaded) {
@@ -64,10 +64,10 @@ class NullifierCache {
    * Call this after deleteNullifiersFromBlock has been applied to the DB.
    * @param chainDb - Chain database instance.
    */
-  handleReorg (chainDb: ChainDB): void {
+  async handleReorg (chainDb: ChainDB): Promise<void> {
     this.#lastBlockLoaded = -1n
     this.#initialized = false
-    this.initialize(chainDb)
+    await this.initialize(chainDb)
   }
 
   /**

@@ -6,7 +6,7 @@ import {
   insertNullifiersBatch,
 } from '@railgun-reloaded/storage'
 
-import type { NullifierCache } from './nullifier-cache'
+import type { NullifierCache } from './nullifier-cache.js'
 
 /**
  * Extract nullifiers from Transact events and persist them to the chain database.

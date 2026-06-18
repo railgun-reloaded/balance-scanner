@@ -10,10 +10,10 @@ import {
   getNullifiersByBlockRange,
 } from '@railgun-reloaded/storage'
 
-import { getTokenBalances } from '../src/balance'
-import { NullifierCache } from '../src/nullifier-cache'
-import { loadNullifierSet, syncNullifiers } from '../src/nullifier-store'
-import type { DecryptedNote } from '../src/types'
+import { getTokenBalances } from '../src/balance.js'
+import { NullifierCache } from '../src/nullifier-cache.js'
+import { loadNullifierSet, syncNullifiers } from '../src/nullifier-store.js'
+import type { DecryptedNote } from '../src/types.js'
 
 /**
  * Generate random bytes of given size.

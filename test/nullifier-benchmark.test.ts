@@ -8,8 +8,8 @@ import {
   insertNullifiersBatch,
 } from '@railgun-reloaded/storage'
 
-import { NullifierCache } from '../src/nullifier-cache'
-import { loadNullifierSet } from '../src/nullifier-store'
+import { NullifierCache } from '../src/nullifier-cache.js'
+import { loadNullifierSet } from '../src/nullifier-store.js'
 
 /**
  * Generate random bytes of given size.

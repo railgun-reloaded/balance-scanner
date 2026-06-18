@@ -1,4 +1,4 @@
-import type { CommitmentEvent } from '../../src/ciphertext'
+import type { CommitmentEvent } from '../../src/ciphertext/index.js'
 
 const events = [{
   name: 'Transact',

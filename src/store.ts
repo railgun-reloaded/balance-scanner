@@ -2,7 +2,7 @@ import { hexToBytes } from '@railgun-reloaded/bytes'
 import type { NoteInput, WalletDB } from '@railgun-reloaded/storage'
 import { insertNotesBatch, toDBNotes } from '@railgun-reloaded/storage'
 
-import type { DecryptedNote } from './types'
+import type { DecryptedNote } from './types.js'
 
 /**
  * Canonical form for ERC-20 token addresses crossing into the storage layer.

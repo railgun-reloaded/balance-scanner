@@ -10,7 +10,7 @@ import {
   insertNullifiersBatch,
 } from '@railgun-reloaded/storage'
 
-import { NullifierCache } from '../src/nullifier-cache'
+import { NullifierCache } from '../src/nullifier-cache.js'
 
 /**
  * Generate random bytes for test data.

@@ -4,10 +4,10 @@ import {
   parseShieldCommitment,
   parseTransactCommitment,
   parseTransactCommitmentV3
-} from './parser'
-import type { CiphertextIndexKey, CiphertextIndexerOptions, CommitmentEvent, IndexConfig, IndexedCiphertextRecord, PrimaryIndexOption } from './types'
-import { CommitmentType } from './types'
-import { hasCiphertext } from './utils'
+} from './parser.js'
+import type { CiphertextIndexKey, CiphertextIndexerOptions, CommitmentEvent, IndexConfig, IndexedCiphertextRecord, PrimaryIndexOption } from './types.js'
+import { CommitmentType } from './types.js'
+import { hasCiphertext } from './utils.js'
 
 /**
  * In-memory indexer for mapping commitment hashes to ciphertexts from CommitmentBatch events.

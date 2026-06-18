@@ -7,7 +7,7 @@ import { ActionType } from '@railgun-reloaded/scanner'
 import type { TokenDataGetter } from '@railgun-reloaded/wallet-node'
 import { TokenType, initializeCryptographyLibs } from '@railgun-reloaded/wallet-node'
 
-import { decryptActions } from '../src/processor'
+import { decryptActions } from '../src/processor.js'
 
 before(async () => {
   await initializeCryptographyLibs()

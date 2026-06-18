@@ -1,4 +1,4 @@
-import type { CommitmentEvent } from '../../src/ciphertext'
+import type { CommitmentEvent } from '../../src/ciphertext/index.js'
 
 /**
  * Async generator yielding events for async iterable ingestion test.

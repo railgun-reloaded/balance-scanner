@@ -1,4 +1,4 @@
-import type { CommitmentEvent, IndexedCiphertextRecord } from './types'
+import type { CommitmentEvent, IndexedCiphertextRecord } from './types.js'
 
 /**
  * Parses a TransactCommitment event.

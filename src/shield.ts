@@ -3,8 +3,8 @@ import type { Shield } from '@railgun-reloaded/scanner'
 import type { Chain } from '@railgun-reloaded/wallet-node'
 import { ShieldNote } from '@railgun-reloaded/wallet-node'
 
-import { computeNullifier } from './nullifier'
-import type { DecryptedNote } from './types'
+import { computeNullifier } from './nullifier.js'
+import type { DecryptedNote } from './types.js'
 
 type ShieldContext = {
   chain: Chain

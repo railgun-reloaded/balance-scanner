@@ -9,8 +9,8 @@ import {
   decryptCommitmentAsReceiverOrSender,
 } from '@railgun-reloaded/wallet-node'
 
-import { computeNullifier } from './nullifier'
-import type { DecryptedNote, DecryptedSentNote } from './types'
+import { computeNullifier } from './nullifier.js'
+import type { DecryptedNote, DecryptedSentNote } from './types.js'
 
 type TransactContext = {
   chain: Chain

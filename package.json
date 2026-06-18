@@ -2,6 +2,7 @@
   "name": "@railgun-reloaded/balance-scanner",
   "version": "0.0.0",
   "description": "A simple module responsible for discovering, tracking, and computing user RAILGUN balances from on-chain privacy pool state.",
+  "type": "module",
   "scripts": {
     "build": "tsc --build",
     "clean": "tsc --build --clean",

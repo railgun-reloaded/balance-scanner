@@ -1,9 +1,9 @@
-export { CiphertextIndexer } from './indexer'
+export { CiphertextIndexer } from './indexer.js'
 export type {
   CommitmentEvent,
   IndexedCiphertextRecord,
   IndexConfig,
   CiphertextIndexerOptions,
   IndexedTransactCommitmentRecord
-} from './types'
-export { CommitmentType } from './types'
+} from './types.js'
+export { CommitmentType } from './types.js'

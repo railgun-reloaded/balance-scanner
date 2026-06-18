@@ -1,6 +1,6 @@
 import { TokenType } from '@railgun-reloaded/wallet-node'
 
-import type { DecryptedNote } from './types'
+import type { DecryptedNote } from './types.js'
 
 /**
  * Aggregated unspent balance for a single token identity.

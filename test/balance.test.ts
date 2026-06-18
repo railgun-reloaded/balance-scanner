@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { getBalances, getTokenBalance, getTokenBalances } from '../src/balance'
-import type { DecryptedNote } from '../src/types'
-import { TokenType } from '../src/types'
+import { getBalances, getTokenBalance, getTokenBalances } from '../src/balance.js'
+import type { DecryptedNote } from '../src/types.js'
+import { TokenType } from '../src/types.js'
 
 const ERC20_SUB_ID = `0x${'00'.repeat(32)}`
 const NFT_COLLECTION = '0x858Df9F84C73E01c55A2DFB95825401242a65D64'

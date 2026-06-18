@@ -1,9 +1,9 @@
 import type { Shield, Transact, Unshield } from '@railgun-reloaded/scanner'
 import type { Chain, TokenDataGetter } from '@railgun-reloaded/wallet-node'
 
-import { processShieldAction } from './shield'
-import { processTransactAction } from './transact'
-import type { DecryptedNote, DecryptedSentNote } from './types'
+import { processShieldAction } from './shield.js'
+import { processTransactAction } from './transact.js'
+import type { DecryptedNote, DecryptedSentNote } from './types.js'
 
 type ProcessorContext = {
   chain: Chain

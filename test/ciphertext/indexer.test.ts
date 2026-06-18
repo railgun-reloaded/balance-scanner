@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import type { IndexedCiphertextRecord } from '../../src/ciphertext'
-import { CiphertextIndexer } from '../../src/ciphertext'
+import type { IndexedCiphertextRecord } from '../../src/ciphertext/index.js'
+import { CiphertextIndexer } from '../../src/ciphertext/index.js'
 
-import { events } from './test-data'
-import { eventGenerator } from './utils'
+import { events } from './test-data.js'
+import { eventGenerator } from './utils.js'
 
 test('CiphertextIndexer: array ingestion, primary/secondary index', async () => {
   const indexer = new CiphertextIndexer(events, {

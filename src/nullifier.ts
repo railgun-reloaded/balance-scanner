@@ -1,7 +1,7 @@
 import { bigIntToBytes, bytesToHex } from '@railgun-reloaded/bytes'
 import { poseidon } from '@railgun-reloaded/wallet-node'
 
-import type { SpentNoteInfo } from './types'
+import type { SpentNoteInfo } from './types.js'
 
 /**
  * Compute a nullifier from nullifying key and leaf index.

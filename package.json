@@ -41,7 +41,7 @@
     "@railgun-reloaded/scanner": "https://github.com/railgun-reloaded/scanner#dev",
     "@railgun-reloaded/storage": "https://github.com/railgun-reloaded/storage#dev",
     "@railgun-reloaded/tsconfig": "https://github.com/railgun-reloaded/tsconfig#main",
-    "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node#main",
+    "@railgun-reloaded/wallet-node": "https://github.com/railgun-reloaded/wallet-node#dev",
     "@types/node": "^24.0.11"
   }
 }

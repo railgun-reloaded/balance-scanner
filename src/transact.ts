@@ -173,7 +173,6 @@ async function tryDecryptTransactCommitment (
     commitment.blindedReceiverViewingKey,
     commitment.blindedSenderViewingKey,
     ctx.viewingPrivateKey,
-    commitment.memo,
     ctx.tokenDataGetter
   )
 

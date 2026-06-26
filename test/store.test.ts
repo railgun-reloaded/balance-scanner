@@ -3,12 +3,12 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import { bytesToHex } from '@railgun-reloaded/bytes'
-import type { WalletDB } from '@railgun-reloaded/storage'
+import type { WalletDB } from '@railgun-reloaded/storage/node'
 import {
   createWallet,
   createWalletDB,
   getAllNotes,
-} from '@railgun-reloaded/storage'
+} from '@railgun-reloaded/storage/node'
 
 import { storeDecryptedNotes, toNoteInput } from '../src/store.js'
 import type { DecryptedNote } from '../src/types.js'

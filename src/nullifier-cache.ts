@@ -1,6 +1,6 @@
 import { bytesToHex } from '@railgun-reloaded/bytes'
-import type { ChainDB } from '@railgun-reloaded/storage'
-import { getAllNullifiers, getNullifiersFromBlock } from '@railgun-reloaded/storage'
+import type { ChainDB } from '@railgun-reloaded/storage/node'
+import { getAllNullifiers, getNullifiersFromBlock } from '@railgun-reloaded/storage/node'
 
 /**
  * In-memory cache for nullifier hex strings with block-tracked incremental updates.

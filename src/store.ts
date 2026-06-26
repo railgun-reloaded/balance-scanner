@@ -1,6 +1,8 @@
 import { hexToBytes } from '@railgun-reloaded/bytes'
-import type { NoteInput, WalletDB } from '@railgun-reloaded/storage'
-import { insertNotesBatch, toDBNotes } from '@railgun-reloaded/storage'
+import type { NoteInput } from '@railgun-reloaded/storage'
+import { toDBNotes } from '@railgun-reloaded/storage'
+import type { WalletDB } from '@railgun-reloaded/storage/node'
+import { insertNotesBatch } from '@railgun-reloaded/storage/node'
 
 import type { DecryptedNote } from './types.js'
 

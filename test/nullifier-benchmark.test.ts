@@ -2,11 +2,11 @@ import crypto from 'crypto'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import type { ChainDB } from '@railgun-reloaded/storage'
+import type { ChainDB } from '@railgun-reloaded/storage/node'
 import {
   createChainDB,
   insertNullifiersBatch,
-} from '@railgun-reloaded/storage'
+} from '@railgun-reloaded/storage/node'
 
 import { NullifierCache } from '../src/nullifier-cache.js'
 import { loadNullifierSet } from '../src/nullifier-store.js'

@@ -4,11 +4,11 @@ import { test } from 'node:test'
 
 import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { Transact } from '@railgun-reloaded/scanner'
-import type { ChainDB } from '@railgun-reloaded/storage'
+import type { ChainDB } from '@railgun-reloaded/storage/node'
 import {
   createChainDB,
   getNullifiersByBlockRange,
-} from '@railgun-reloaded/storage'
+} from '@railgun-reloaded/storage/node'
 
 import { getTokenBalances } from '../src/balance.js'
 import { NullifierCache } from '../src/nullifier-cache.js'

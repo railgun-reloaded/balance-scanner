@@ -1,10 +1,10 @@
 import { bytesToHex } from '@railgun-reloaded/bytes'
 import type { Transact } from '@railgun-reloaded/scanner'
-import type { ChainDB } from '@railgun-reloaded/storage'
+import type { ChainDB } from '@railgun-reloaded/storage/node'
 import {
   getAllNullifiers,
   insertNullifiersBatch,
-} from '@railgun-reloaded/storage'
+} from '@railgun-reloaded/storage/node'
 
 import type { NullifierCache } from './nullifier-cache.js'
 

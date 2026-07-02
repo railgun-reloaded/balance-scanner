@@ -1,6 +1,5 @@
 import { bytesToHex } from '@railgun-reloaded/bytes'
-import type { ChainDB } from '@railgun-reloaded/storage/node'
-import { getAllNullifiers, getNullifiersFromBlock } from '@railgun-reloaded/storage/node'
+import type { ChainStorage } from '@railgun-reloaded/storage'
 
 /**
  * In-memory cache for nullifier hex strings with block-tracked incremental updates.
@@ -22,13 +21,13 @@ class NullifierCache {
   }
 
   /**
-   * Load all nullifiers from the chain database into the cache.
-   * @param chainDb - Chain database instance.
+   * Load all nullifiers from chain storage into the cache.
+   * @param chainStorage - Chain storage instance.
    */
-  async initialize (chainDb: ChainDB): Promise<void> {
+  async initialize (chainStorage: ChainStorage): Promise<void> {
     this.#set.clear()
     this.#lastBlockLoaded = -1n
-    const rows = await getAllNullifiers(chainDb)
+    const rows = await chainStorage.getAllNullifiers()
     for (const row of rows) {
       this.#set.add(bytesToHex(row.nullifier as Uint8Array, { prefix: true }))
       if (row.blockNumber > this.#lastBlockLoaded) {
@@ -40,16 +39,16 @@ class NullifierCache {
 
   /**
    * Incrementally update the cache with nullifiers added since the last loaded block.
-   * @param chainDb - Chain database instance.
+   * @param chainStorage - Chain storage instance.
    * @returns Number of new nullifiers added to the cache.
    */
-  async update (chainDb: ChainDB): Promise<number> {
+  async update (chainStorage: ChainStorage): Promise<number> {
     if (!this.#initialized) {
-      await this.initialize(chainDb)
+      await this.initialize(chainStorage)
       return this.#set.size
     }
 
-    const rows = await getNullifiersFromBlock(chainDb, this.#lastBlockLoaded + 1n)
+    const rows = await chainStorage.getNullifiersFromBlock(this.#lastBlockLoaded + 1n)
     for (const row of rows) {
       this.#set.add(bytesToHex(row.nullifier as Uint8Array, { prefix: true }))
       if (row.blockNumber > this.#lastBlockLoaded) {
@@ -61,17 +60,17 @@ class NullifierCache {
 
   /**
    * Clear and reload the cache after a chain reorganization.
-   * Call this after deleteNullifiersFromBlock has been applied to the DB.
-   * @param chainDb - Chain database instance.
+   * Call this after deleteNullifiersFromBlock has been applied to storage.
+   * @param chainStorage - Chain storage instance.
    */
-  async handleReorg (chainDb: ChainDB): Promise<void> {
+  async handleReorg (chainStorage: ChainStorage): Promise<void> {
     this.#lastBlockLoaded = -1n
     this.#initialized = false
-    await this.initialize(chainDb)
+    await this.initialize(chainStorage)
   }
 
   /**
-   * Add a hex nullifier directly to the cache without a DB query.
+   * Add a hex nullifier directly to the cache without a storage query.
    * Used by syncNullifiers to keep cache in sync with writes.
    * @param hex - The 0x-prefixed hex nullifier string.
    * @param blockNumber - The block number of this nullifier.

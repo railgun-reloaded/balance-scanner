@@ -3,12 +3,8 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import { bytesToHex } from '@railgun-reloaded/bytes'
-import type { WalletDB } from '@railgun-reloaded/storage/node'
-import {
-  createWallet,
-  createWalletDB,
-  getAllNotes,
-} from '@railgun-reloaded/storage/node'
+import type { WalletStorage } from '@railgun-reloaded/storage'
+import { createWalletDB, createWalletStorage } from '@railgun-reloaded/storage/node'
 
 import { storeDecryptedNotes, toNoteInput } from '../src/store.js'
 import type { DecryptedNote } from '../src/types.js'
@@ -23,11 +19,12 @@ function randomBytes (size: number): Uint8Array {
 }
 
 /**
- * Create an in-memory wallet database for testing.
- * @returns WalletDB instance with schema applied.
+ * Create a wallet storage backed by an in-memory database for testing.
+ * @returns WalletStorage instance with schema applied.
  */
-async function createTestWalletDb (): Promise<WalletDB> {
-  return createWalletDB({ path: ':memory:', runMigrations: true })
+async function createTestWalletStorage (): Promise<WalletStorage> {
+  const db = await createWalletDB({ path: ':memory:', runMigrations: true })
+  return createWalletStorage(db)
 }
 
 /**
@@ -54,50 +51,50 @@ function makeNote (overrides: Partial<DecryptedNote> = {}): DecryptedNote {
   }
 }
 
-test('storeDecryptedNotes persists notes to wallet DB', async () => {
-  const db = await createTestWalletDb()
-  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+test('storeDecryptedNotes persists notes to wallet storage', async () => {
+  const storage = await createTestWalletStorage()
+  await storage.createWallet({ id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
   const notes = [makeNote(), makeNote()]
-  const count = await storeDecryptedNotes(db, notes)
+  const count = await storeDecryptedNotes(storage, notes)
 
   assert.equal(count, 2, 'returns number of rows inserted')
 
-  const stored = await getAllNotes(db, 'test-wallet', 1)
+  const stored = await storage.getAllNotes('test-wallet', 1)
   assert.equal(stored.length, 2, 'two notes persisted in DB')
 })
 
 test('storeDecryptedNotes returns 0 for empty array', async () => {
-  const db = await createTestWalletDb()
-  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+  const storage = await createTestWalletStorage()
+  await storage.createWallet({ id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
-  const count = await storeDecryptedNotes(db, [])
+  const count = await storeDecryptedNotes(storage, [])
 
   assert.equal(count, 0, 'returns 0 when no notes provided')
 })
 
 test('storeDecryptedNotes handles duplicate notes idempotently', async () => {
-  const db = await createTestWalletDb()
-  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+  const storage = await createTestWalletStorage()
+  await storage.createWallet({ id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
   const note = makeNote()
-  await storeDecryptedNotes(db, [note])
-  const secondCount = await storeDecryptedNotes(db, [note])
+  await storeDecryptedNotes(storage, [note])
+  const secondCount = await storeDecryptedNotes(storage, [note])
 
   assert.equal(secondCount, 0, 'second insert of duplicate returns 0')
 
-  const stored = await getAllNotes(db, 'test-wallet', 1)
+  const stored = await storage.getAllNotes('test-wallet', 1)
   assert.equal(stored.length, 1, 'only one note in DB after duplicate insert')
 })
 
 test('storeDecryptedNotes correctly maps treeId to treeNumber and leafIndex to treePosition', async () => {
-  const db = await createTestWalletDb()
-  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+  const storage = await createTestWalletStorage()
+  await storage.createWallet({ id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
   const note = makeNote({ treeId: 3, leafIndex: 42n })
-  await storeDecryptedNotes(db, [note])
+  await storeDecryptedNotes(storage, [note])
 
-  const stored = await getAllNotes(db, 'test-wallet', 1)
+  const stored = await storage.getAllNotes('test-wallet', 1)
   assert.equal(stored.length, 1, 'one note stored')
   assert.equal(stored[0]!.treeNumber, 3, 'treeId mapped to treeNumber')
   assert.equal(stored[0]!.treePosition, 42, 'leafIndex mapped to treePosition')
@@ -120,13 +117,13 @@ test('toNoteInput forwards tokenType and tokenSubID unchanged', () => {
 })
 
 test('storeDecryptedNotes persists ERC721 tokenType and tokenSubID end-to-end', async () => {
-  const db = await createTestWalletDb()
-  await createWallet(db, { id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
+  const storage = await createTestWalletStorage()
+  await storage.createWallet({ id: 'test-wallet', encryptedKeys: Buffer.from('keys') })
 
   const subIdHex = `0x${'ab'.repeat(32)}`
-  await storeDecryptedNotes(db, [makeNote({ tokenType: 1, tokenSubID: subIdHex })])
+  await storeDecryptedNotes(storage, [makeNote({ tokenType: 1, tokenSubID: subIdHex })])
 
-  const stored = await getAllNotes(db, 'test-wallet', 1)
+  const stored = await storage.getAllNotes('test-wallet', 1)
   assert.equal(stored.length, 1)
   assert.equal(stored[0]!.tokenType, 1)
   assert.equal(stored[0]!.tokenSubID.length, 32)

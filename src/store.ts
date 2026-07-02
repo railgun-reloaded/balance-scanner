@@ -1,8 +1,6 @@
 import { hexToBytes } from '@railgun-reloaded/bytes'
-import type { NoteInput } from '@railgun-reloaded/storage'
+import type { NoteInput, WalletStorage } from '@railgun-reloaded/storage'
 import { toDBNotes } from '@railgun-reloaded/storage'
-import type { WalletDB } from '@railgun-reloaded/storage/node'
-import { insertNotesBatch } from '@railgun-reloaded/storage/node'
 
 import type { DecryptedNote } from './types.js'
 
@@ -66,17 +64,17 @@ function toNoteInput (note: DecryptedNote): NoteInput {
 }
 
 /**
- * Persists an array of DecryptedNote records to the wallet database in a single batch.
+ * Persists an array of DecryptedNote records to wallet storage in a single batch.
  * Returns 0 immediately when the input array is empty.
- * @param walletDb - Wallet database instance to write into.
+ * @param walletStorage - Wallet storage instance to write into.
  * @param notes - Array of decrypted notes to persist.
  * @returns Number of rows inserted (duplicates are silently ignored).
  */
-async function storeDecryptedNotes (walletDb: WalletDB, notes: DecryptedNote[]): Promise<number> {
+async function storeDecryptedNotes (walletStorage: WalletStorage, notes: DecryptedNote[]): Promise<number> {
   if (notes.length === 0) return 0
   const noteInputs = notes.map(toNoteInput)
   const dbNotes = toDBNotes(noteInputs)
-  return insertNotesBatch(walletDb, dbNotes)
+  return walletStorage.insertNotesBatch(dbNotes)
 }
 
 export { storeDecryptedNotes, toNoteInput }
